@@ -1,6 +1,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Input.Touch;
+using Oobi.Classes;
+using System.Collections.Generic;
 
 namespace OobiMobile
 {
@@ -11,6 +14,16 @@ namespace OobiMobile
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+
+        Texture2D MainCha;
+        List<Texture2D> EnemyIndex;
+        List<Texture2D> ColleIndex;
+        List<Enemy> EnemyList;
+        List<EnemyGenerator> EnemyGenList;
+        Texture2D Rope;
+
+        int ViewportWidth, ViewportHeight;
+        MainCharacter mc;
 
         public Game1()
         {
@@ -32,7 +45,16 @@ namespace OobiMobile
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
+            EnemyList = new List<Enemy>();
+            EnemyIndex = new List<Texture2D>();
+            ColleIndex = new List<Texture2D>();
+            EnemyGenList = new List<EnemyGenerator>();
+            ViewportWidth = GraphicsDevice.Viewport.Width;
+            ViewportHeight = GraphicsDevice.Viewport.Height;
+            // TODO: Add your initialization logic here
+            int[] toe1 = { 0, 1 };
+            EnemyGenerator eneGen = new EnemyGenerator(toe1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f));
+            EnemyGenList.Add(eneGen);
             base.Initialize();
         }
 
@@ -46,6 +68,11 @@ namespace OobiMobile
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            MainCha = Content.Load<Texture2D>("MainCharacter");
+            EnemyIndex.Add(Content.Load<Texture2D>("EnemyA"));
+            EnemyIndex.Add(Content.Load<Texture2D>("EnemyB"));
+
+            mc = new MainCharacter(MainCha, Vector2.Zero, Vector2.Zero);
         }
 
         /// <summary>
@@ -68,6 +95,33 @@ namespace OobiMobile
                 Exit();
 
             // TODO: Add your update logic here
+            if (TouchPanel.GetCapabilities().IsConnected)
+            {
+                TouchCollection touchCol = TouchPanel.GetState();
+                foreach (TouchLocation touch in touchCol)
+                {
+                    if (touch.State != TouchLocationState.Moved)
+                    {
+
+                    }
+                }
+            }
+            else
+            {
+                MouseState ms = Mouse.GetState();
+                mc.position = new Vector2(ms.Position.X, ms.Position.Y);
+            }
+
+            // TODO: Add your update logic here
+            //Generating Enemies
+            foreach (EnemyGenerator eg in EnemyGenList)
+            {
+                eg.Generate(gameTime, EnemyList);
+            }
+            foreach (Enemy e in EnemyList)
+            {
+                e.Move(gameTime);
+            }
 
             base.Update(gameTime);
         }
@@ -81,7 +135,14 @@ namespace OobiMobile
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            spriteBatch.Draw(mc.texture, mc.position, Color.White);
+            foreach (Enemy e in EnemyList)
+            {
+                spriteBatch.Draw(EnemyIndex[e.type], e.position, Color.White);
+            }
 
+            spriteBatch.End();
             base.Draw(gameTime);
         }
     }

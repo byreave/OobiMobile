@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceFileCollection xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Profile>Reach</Profile>
+  <Platform>Android</Platform>
+  <Config />
+  <SourceFiles>
+    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/CollectiblesA.png</File>
+    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/EnemyA.png</File>
+    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/EnemyB.png</File>
+    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/MainCharacter.png</File>
+    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/rope.png</File>
+  </SourceFiles>
+</SourceFileCollection>
