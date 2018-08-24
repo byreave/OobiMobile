@@ -15,7 +15,7 @@ namespace OobiMobile
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Texture2D MainCha;
+        Texture2D MainCha, background;
         List<Texture2D> EnemyIndex;
         List<Texture2D> ColleIndex;
         List<Enemy> EnemyList;
@@ -31,8 +31,8 @@ namespace OobiMobile
             Content.RootDirectory = "Content";
 
             graphics.IsFullScreen = true;
-            graphics.PreferredBackBufferWidth = 800;
-            graphics.PreferredBackBufferHeight = 480;
+            //graphics.PreferredBackBufferWidth = 800;
+            //graphics.PreferredBackBufferHeight = 480;
             graphics.SupportedOrientations = DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
         }
 
@@ -69,6 +69,7 @@ namespace OobiMobile
 
             // TODO: use this.Content to load your game content here
             MainCha = Content.Load<Texture2D>("MainCharacter");
+            background = Content.Load<Texture2D>("Background_Placeholder");
             EnemyIndex.Add(Content.Load<Texture2D>("EnemyA"));
             EnemyIndex.Add(Content.Load<Texture2D>("EnemyB"));
 
@@ -135,6 +136,13 @@ namespace OobiMobile
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+            //Background
+            spriteBatch.Begin();
+
+            spriteBatch.Draw(background, new Rectangle(0, 0, 1080, 1920), Color.White);
+
+            spriteBatch.End();
+
             spriteBatch.Begin();
             spriteBatch.Draw(mc.texture, mc.position, Color.White);
             foreach (Enemy e in EnemyList)
