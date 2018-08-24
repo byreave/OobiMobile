@@ -15,12 +15,11 @@ namespace OobiMobile
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Texture2D MainCha, background;
+        Texture2D MainCha, background, pivot;
         List<Texture2D> EnemyIndex;
         List<Texture2D> ColleIndex;
         List<Enemy> EnemyList;
         List<EnemyGenerator> EnemyGenList;
-        Texture2D Rope;
 
         int ViewportWidth, ViewportHeight;
         MainCharacter mc;
@@ -70,8 +69,10 @@ namespace OobiMobile
             // TODO: use this.Content to load your game content here
             MainCha = Content.Load<Texture2D>("MainCharacter");
             background = Content.Load<Texture2D>("Background_Placeholder");
+            pivot = Content.Load<Texture2D>("Pivot_Placeholder");
             EnemyIndex.Add(Content.Load<Texture2D>("EnemyA"));
             EnemyIndex.Add(Content.Load<Texture2D>("EnemyB"));
+            
 
             mc = new MainCharacter(MainCha, Vector2.Zero, Vector2.Zero);
         }
@@ -136,10 +137,11 @@ namespace OobiMobile
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
-            //Background
+            //Background & Pivot
             spriteBatch.Begin();
 
-            spriteBatch.Draw(background, new Rectangle(0, 0, 1080, 1920), Color.White);
+            spriteBatch.Draw(background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
+            spriteBatch.Draw(pivot, new Rectangle(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 4, 1, 1), Color.White);
 
             spriteBatch.End();
 
