@@ -14,6 +14,7 @@ namespace Oobi.Classes
         public Vector2 position { set; get; }
         public Vector2 velc { set; get; }
         public int type { set; get; }
+        public float ColRadius { set; get; }
 
         public Enemy(int t, Vector2 v, Vector2 p, int l = 1)
         {

@@ -22,6 +22,10 @@ namespace OobiMobile
         List<EnemyGenerator> EnemyGenList;
 
         int ViewportWidth, ViewportHeight;
+        float PressureTime, DryTime;
+        float PressureTimeLimit, DryTimeLimit;
+        Vector2 TouchStart, TouchEnd, TouchDirection;
+        Vector2 PivotCenter;
         MainCharacter mc;
 
         public Game1()
@@ -50,6 +54,12 @@ namespace OobiMobile
             EnemyGenList = new List<EnemyGenerator>();
             ViewportWidth = GraphicsDevice.Viewport.Width;
             ViewportHeight = GraphicsDevice.Viewport.Height;
+            PressureTime = 0.0f;
+            PressureTimeLimit = 2.0f;
+            DryTime = 0.0f;
+            DryTimeLimit = 3.0f;
+            
+            
             // TODO: Add your initialization logic here
             int[] toe1 = { 0, 1 };
             EnemyGenerator eneGen = new EnemyGenerator(toe1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f));
@@ -67,14 +77,24 @@ namespace OobiMobile
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            MainCha = Content.Load<Texture2D>("MainCharacter");
+            MainCha = Content.Load<Texture2D>("Eye_Placeholder");
             background = Content.Load<Texture2D>("Background_Placeholder");
             pivot = Content.Load<Texture2D>("Pivot_Placeholder");
-            EnemyIndex.Add(Content.Load<Texture2D>("EnemyA"));
-            EnemyIndex.Add(Content.Load<Texture2D>("EnemyB"));
-            
+            EnemyIndex.Add(Content.Load<Texture2D>("Bee_Placeholder"));
+            EnemyIndex.Add(Content.Load<Texture2D>("Tack_1_Placeholder"));
+            EnemyIndex.Add(Content.Load<Texture2D>("Tack_2_Placeholder"));
+            EnemyIndex.Add(Content.Load<Texture2D>("Tack_3_Placeholder"));
+            EnemyIndex.Add(Content.Load<Texture2D>("Tack_4_Placeholder"));
+            EnemyIndex.Add(Content.Load<Texture2D>("Tack_5_Placeholder"));
+            foreach (Enemy e in EnemyList)
+            {
+                e.ColRadius = (EnemyIndex[e.type].Width + EnemyIndex[e.type].Height) / 8.0f;
+            }
 
-            mc = new MainCharacter(MainCha, Vector2.Zero, Vector2.Zero);
+
+            PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2 - pivot.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2);
+
+            mc = new MainCharacter(MainCha, PivotCenter, Vector2.Zero);
         }
 
         /// <summary>
@@ -100,18 +120,37 @@ namespace OobiMobile
             if (TouchPanel.GetCapabilities().IsConnected)
             {
                 TouchCollection touchCol = TouchPanel.GetState();
+
                 foreach (TouchLocation touch in touchCol)
                 {
-                    if (touch.State != TouchLocationState.Moved)
+                    if (touch.State == TouchLocationState.Pressed)
                     {
+                        if(Vector2.Distance(touch.Position, mc.Position) <= mc.ColRadius)
+                        {
+                            TouchStart = touch.Position;
+                            mc.IsDragged = true;
+                        }
+                    }
 
+                    if(touch.State == TouchLocationState.Moved && mc.IsDragged)
+                    {
+                        mc.Position = touch.Position;
+                    }
+                    if (touch.State == TouchLocationState.Released)
+                    {
+                        TouchEnd = touch.Position;
+                        mc.IsDragged = false;
+                        TouchDirection = Vector2.Normalize(Vector2.Subtract(TouchEnd, TouchStart));
+                        //speed due to distance between two points.
+                        float speed = Vector2.Distance(TouchEnd, TouchStart);
+                        mc.Velc = TouchDirection * speed / 10.0f;
                     }
                 }
             }
             else
             {
                 MouseState ms = Mouse.GetState();
-                mc.position = new Vector2(ms.Position.X, ms.Position.Y);
+                mc.Position = new Vector2(ms.Position.X, ms.Position.Y);
             }
 
             // TODO: Add your update logic here
@@ -124,7 +163,27 @@ namespace OobiMobile
             {
                 e.Move(gameTime);
             }
+            //Time
+            PressureTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            DryTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if(PressureTime >= PressureTimeLimit)
+            {
+                //explode
+            }
 
+            if(DryTime >= DryTimeLimit)
+            {
+                //game over
+            }
+
+            //Main character move
+            if (mc.IsDragged == false)
+            {
+                mc.Move(gameTime);
+                mc.Gravity(500.0f, gameTime);
+                mc.BorderCheck(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, ViewportWidth / 2.0f, PivotCenter);
+            }
+            
             base.Update(gameTime);
         }
 
@@ -141,12 +200,12 @@ namespace OobiMobile
             spriteBatch.Begin();
 
             spriteBatch.Draw(background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
-            spriteBatch.Draw(pivot, new Rectangle(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 4, 1, 1), Color.White);
+            spriteBatch.Draw(pivot, new Rectangle(GraphicsDevice.Viewport.Width / 2 - pivot.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2, pivot.Width, pivot.Height), Color.White);
 
             spriteBatch.End();
 
             spriteBatch.Begin();
-            spriteBatch.Draw(mc.texture, mc.position, Color.White);
+            spriteBatch.Draw(mc.Texture, mc.Position, Color.White);
             foreach (Enemy e in EnemyList)
             {
                 spriteBatch.Draw(EnemyIndex[e.type], e.position, Color.White);
