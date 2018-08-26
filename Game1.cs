@@ -15,7 +15,7 @@ namespace OobiMobile
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Texture2D MainCha, background, pivot;
+        Texture2D MainCha, background, pivot, Heart;
         List<Texture2D> EnemyIndex;
         List<Texture2D> ColleIndex;
         List<Enemy> EnemyList;
@@ -88,6 +88,7 @@ namespace OobiMobile
             MainCha = Content.Load<Texture2D>("Eye_Placeholder");
             background = Content.Load<Texture2D>("Background_Placeholder");
             pivot = Content.Load<Texture2D>("Pivot_Placeholder");
+            Heart = Content.Load<Texture2D>("Heart");
             EnemyIndex.Add(Content.Load<Texture2D>("Bee_Placeholder"));
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_1_Placeholder"));
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_2_Placeholder"));
@@ -273,6 +274,16 @@ namespace OobiMobile
             {
                 c.ColRadius = (ColleIndex[c.Type].Width + ColleIndex[c.Type].Height) / 8.0f;//give collison box size
                 spriteBatch.Draw(ColleIndex[c.Type], c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
+            }
+            
+            spriteBatch.End();
+            spriteBatch.Begin();
+            //Heart
+            if (mc.Lives < 0)
+                mc.Lives = 0;
+            for (int i = 0; i < mc.Lives; ++i)
+            {
+                spriteBatch.Draw(Heart, new Vector2(ViewportWidth / 20.0f + i * 1.2f * Heart.Width, ViewportHeight / 40.0f), Color.White);
             }
             spriteBatch.End();
             base.Draw(gameTime);

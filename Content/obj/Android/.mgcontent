@@ -4,10 +4,6 @@
   <Platform>Android</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/CollectiblesA.png</File>
-    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/EnemyA.png</File>
-    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/EnemyB.png</File>
-    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/MainCharacter.png</File>
     <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/rope.png</File>
     <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/Background_Placeholder.jpg</File>
     <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/Bee_Placeholder.png</File>
@@ -19,5 +15,6 @@
     <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/Tack_3_Placeholder.png</File>
     <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/Tack_4_Placeholder.png</File>
     <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/Tack_5_Placeholder.png</File>
+    <File>C:/Users/u1211442/source/repos/OobiMobile/OobiMobile/Content/Heart.png</File>
   </SourceFiles>
 </SourceFileCollection>

@@ -1,0 +1,9 @@
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\OobiMobile.dll
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\Java.Interop.dll
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\Mono.Android.dll
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\MonoGame.Framework.dll
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\mscorlib.dll
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\OpenTK-1.0.dll
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\System.Core.dll
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\System.dll
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\System.Runtime.Serialization.dll
