@@ -16,7 +16,6 @@ C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\res\values\styl
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\R.cs.flag
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\R.txt
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\uploadflags.txt
-C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\bin\Android\AnyCPU\Release\OobiMobile.dll
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\bin\Android\AnyCPU\Release\Mono.Android.pdb
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\bin\Android\AnyCPU\Release\mscorlib.pdb
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\bin\Android\AnyCPU\Release\OpenTK-1.0.pdb
@@ -41,4 +40,14 @@ C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\linksrc\System.
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\linksrc\System.Runtime.Serialization.pdb
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\linksrc\System.ServiceModel.Internals.pdb
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\linksrc\Mono.Security.pdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\linksrc\OobiMobile.dll.mdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\bin\Android\AnyCPU\Release\OobiMobile.dll.mdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\OobiMobile.dll.mdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\Mono.Android.pdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\mscorlib.pdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\OpenTK-1.0.pdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\System.Core.pdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\System.pdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\System.Runtime.Serialization.pdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\bin\Android\AnyCPU\Release\OobiMobile.dll
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\linksrc\OobiMobile.dll.mdb
