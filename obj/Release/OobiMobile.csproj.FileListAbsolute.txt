@@ -49,5 +49,4 @@ C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\System.Core.pdb
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\System.pdb
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\android\assets\System.Runtime.Serialization.pdb
-C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\bin\Android\AnyCPU\Release\OobiMobile.dll
-C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\linksrc\OobiMobile.dll.mdb
+C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Release\OobiMobile.csprojAssemblyReference.cache

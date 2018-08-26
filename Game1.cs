@@ -161,6 +161,10 @@ namespace OobiMobile
                             TouchEnd = touch.Position;
                             mc.IsDragged = false;
                             TouchDirection = Vector2.Normalize(Vector2.Subtract(TouchEnd, TouchStart));
+                            if(TouchEnd == TouchStart)
+                            {
+                                TouchDirection = Vector2.Zero;
+                            }
                             //speed due to distance between two points.
                             float speed = Vector2.Distance(TouchEnd, TouchStart);
                             mc.Velc = TouchDirection * speed;
