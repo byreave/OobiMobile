@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activity1.cs" />
+    <Compile Include="Classes\Collectible.cs" />
     <Compile Include="Classes\Enemy.cs" />
     <Compile Include="Classes\EnemyGenerator.cs" />
     <Compile Include="Classes\MainCharacter.cs" />

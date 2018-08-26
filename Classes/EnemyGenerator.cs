@@ -46,7 +46,7 @@ namespace Oobi.Classes
                     if (IsRandom)
                     {
                         Random rand = new Random();
-                        int ind = rand.Next(0, TypesOfEnemy.Length-1);
+                        int ind = rand.Next(0, TypesOfEnemy.Length);
                         eneList.Add(generateAnEnemy(ind));
                     }
                     else

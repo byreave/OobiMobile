@@ -61,8 +61,8 @@ namespace OobiMobile
             
             
             // TODO: Add your initialization logic here
-            int[] toe1 = { 0, 1 };
-            EnemyGenerator eneGen = new EnemyGenerator(toe1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f));
+            int[] toe1 = { 0, 1, 2, 3, 4 };
+            EnemyGenerator eneGen = new EnemyGenerator(toe1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f), 4);
             EnemyGenList.Add(eneGen);
             base.Initialize();
         }
@@ -125,7 +125,7 @@ namespace OobiMobile
                 {
                     if (touch.State == TouchLocationState.Pressed)
                     {
-                        if(Vector2.Distance(touch.Position, mc.Position) <= mc.ColRadius)
+                        if(Vector2.Distance(touch.Position, Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f))) <= mc.ColRadius)
                         {
                             TouchStart = touch.Position;
                             mc.IsDragged = true;
@@ -134,16 +134,19 @@ namespace OobiMobile
 
                     if(touch.State == TouchLocationState.Moved && mc.IsDragged)
                     {
-                        mc.Position = touch.Position;
+                        mc.Position = Vector2.Subtract(touch.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f));
                     }
                     if (touch.State == TouchLocationState.Released)
                     {
-                        TouchEnd = touch.Position;
-                        mc.IsDragged = false;
-                        TouchDirection = Vector2.Normalize(Vector2.Subtract(TouchEnd, TouchStart));
-                        //speed due to distance between two points.
-                        float speed = Vector2.Distance(TouchEnd, TouchStart);
-                        mc.Velc = TouchDirection * speed / 10.0f;
+                        if(mc.IsDragged)
+                        {
+                            TouchEnd = touch.Position;
+                            mc.IsDragged = false;
+                            TouchDirection = Vector2.Normalize(Vector2.Subtract(TouchEnd, TouchStart));
+                            //speed due to distance between two points.
+                            float speed = Vector2.Distance(TouchEnd, TouchStart);
+                            mc.Velc = TouchDirection * speed / 10.0f;
+                        }
                     }
                 }
             }
@@ -181,9 +184,9 @@ namespace OobiMobile
             {
                 mc.Move(gameTime);
                 mc.Gravity(500.0f, gameTime);
-                mc.BorderCheck(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, ViewportWidth / 2.0f, PivotCenter);
             }
-            
+            mc.BorderCheck(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, ViewportWidth / 2.0f, PivotCenter);
+
             base.Update(gameTime);
         }
 
