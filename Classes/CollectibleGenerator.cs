@@ -2,18 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
+using Android.App;
+using Android.Content;
+using Android.OS;
+using Android.Runtime;
+using Android.Views;
+using Android.Widget;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace OobiMobile.Classes
 {
-    class EnemyGenerator
+    class CollectibleGenerator
     {
-        public double SecondsPerEnemy { set; get; } //duration of generating
-        public Vector2 EnemyVelc { set; get; } //starting speed
+        public double SecondsPerCollectible { set; get; } //duration of generating
+        public Vector2 CollectibleVelc { set; get; } //starting speed
         public Vector2 StartPos { set; get; } //starting position
-        public int[] TypesOfEnemy { set; get; } //types of enemies to generate
+        public int[] TypesOfCollectible { set; get; } //types of enemies to generate
         public bool IsRandom { set; get; } //if the generating is random
 
         private bool isPause;
@@ -21,28 +27,28 @@ namespace OobiMobile.Classes
         private int index;
         private float randomSpan;
         private Vector2 viewportSize;
-        public EnemyGenerator(int [] toe, Vector2 startP, Vector2 vel, Vector2 vSize, double seconds = 1.0f, float randSpan = 0.0f, bool isR = true)
+        public CollectibleGenerator(int[] toe, Vector2 startP, Vector2 vel, Vector2 vSize, double seconds = 1.0f, float randSpan = 0.0f, bool isR = true)
         {
-            TypesOfEnemy = toe;
+            TypesOfCollectible = toe;
             StartPos = startP;
-            EnemyVelc = vel;
-            SecondsPerEnemy = seconds;
+            CollectibleVelc = vel;
+            SecondsPerCollectible = seconds;
             IsRandom = isR;
             randomSpan = randSpan;
             viewportSize = vSize;
 
             isPause = false;
-            timer = SecondsPerEnemy;
+            timer = SecondsPerCollectible;
             index = 0;
         }
 
-        
-        public bool Generate(GameTime gameTime, List<Enemy> eneList)
+
+        public bool Generate(GameTime gameTime, List<Collectible> colList)
         {
-            if(!isPause)
+            if (!isPause)
             {
                 timer += gameTime.ElapsedGameTime.TotalSeconds; //to get time
-                if (timer - SecondsPerEnemy < 0)
+                if (timer - SecondsPerCollectible < 0)
                     return false;
                 else
                 {
@@ -50,14 +56,14 @@ namespace OobiMobile.Classes
                     if (IsRandom)
                     {
                         Random rand = new Random();
-                        int ind = rand.Next(0, TypesOfEnemy.Length);
-                        eneList.Add(generateAnEnemy(ind));
+                        int ind = rand.Next(0, TypesOfCollectible.Length);
+                        colList.Add(generateAnCollectible(ind));
                     }
                     else
                     {
-                        if (index >= TypesOfEnemy.Length-1)
+                        if (index >= TypesOfCollectible.Length - 1)
                             index = 0;
-                        eneList.Add(generateAnEnemy(index++));
+                        colList.Add(generateAnCollectible(index++));
                     }
                     return true;
                 }
@@ -65,9 +71,9 @@ namespace OobiMobile.Classes
             return false;
         }
 
-        private Enemy generateAnEnemy(int ind)
+        private Collectible generateAnCollectible(int ind)
         {
-            int enemyType = TypesOfEnemy[ind];
+            int CollectibleType = TypesOfCollectible[ind];
             Random ran = new Random();
             Vector2 randomFactor = StartPos;
             if (randomSpan != 0.0f)
@@ -87,18 +93,18 @@ namespace OobiMobile.Classes
                     randomFactor = new Vector2(randStart + (float)ran.NextDouble() * (randEnd - randStart), 0.0f);
                 }
             }
-            
-            
-            Enemy gEnemy = new Enemy(enemyType, EnemyVelc, randomFactor);
-            return gEnemy;
+
+
+            Collectible gCollectible = new Collectible(CollectibleType, CollectibleVelc, randomFactor);
+            return gCollectible;
         }
 
-        public void pause()
+        public void Pause()
         {
             isPause = true;
         }
 
-        public void unPause()
+        public void UnPause()
         {
             isPause = false;
         }

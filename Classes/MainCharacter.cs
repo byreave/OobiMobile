@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 
-namespace Oobi.Classes
+namespace OobiMobile.Classes
 {
     class MainCharacter
     {
@@ -30,19 +30,19 @@ namespace Oobi.Classes
 
         public bool BorderCheck(float ViewportWidth, float ViewportHeight, float BorderRadius, Vector2 pivotCenter)
         {
-            if (Position.X < (ColRadius - 0.01f) / 2 && Velc.X <= 0)
+            /*if (Position.X < 0 && Velc.X <= 0)
             {
                 Vector2.Subtract(Velc, new Vector2(2 * Velc.X, 0.0f));
                 return true;
             }
-            if(Position.X > (ViewportWidth - ColRadius + 0.01f) / 2 && Velc.X >= 0)
+            if(Position.X > (ViewportWidth - 2 * ColRadius + 0.01f) && Velc.X >= 0)
             {
                 Vector2.Subtract(Velc, new Vector2(2 * Velc.X, 0.0f));
                 return true;
-            }
-            if(Vector2.Distance(Position, pivotCenter) >= BorderRadius)
+            }*/
+            if(Vector2.Distance(Vector2.Add(Position, new Vector2(Texture.Width / 2.0f, Texture.Height / 2.0f)), pivotCenter) >= BorderRadius - ColRadius)
             {
-                Vector2 norm = Vector2.Normalize(Vector2.Subtract(Position, pivotCenter));
+                Vector2 norm = Vector2.Normalize(Vector2.Subtract(Vector2.Add(Position, new Vector2(Texture.Width / 2.0f, Texture.Height / 2.0f)), pivotCenter));
                 Velc = Vector2.Subtract(Velc, Vector2.Multiply(norm, Vector2.Dot(Velc, norm) * 2.0f));
                 return true;
             }

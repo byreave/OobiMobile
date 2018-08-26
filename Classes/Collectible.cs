@@ -18,23 +18,22 @@ namespace OobiMobile.Classes
 {
     class Collectible
     {
-        public int lives { set; get; }
-        public Vector2 position { set; get; }
-        public Vector2 velc { set; get; }
-        public int type { set; get; }
+        public int Lives { set; get; }
+        public Vector2 Position { set; get; }
+        public Vector2 Velc { set; get; }
+        public int Type { set; get; }
         public float ColRadius { set; get; }
 
-        public Collectible(int t, Vector2 v, Vector2 p, int l = 1)
+        public Collectible(int t, Vector2 v, Vector2 p)
         {
-            lives = l;
-            position = p;
-            velc = v;
-            type = t;
+            Position = p;
+            Velc = v;
+            Type = t;
         }
 
         public void Move(GameTime gameTime)
         {
-            position += velc * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Position += Velc * (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
     }
 }

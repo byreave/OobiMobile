@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
-using Oobi.Classes;
+using OobiMobile.Classes;
 using System.Collections.Generic;
 
 namespace OobiMobile
@@ -20,6 +20,8 @@ namespace OobiMobile
         List<Texture2D> ColleIndex;
         List<Enemy> EnemyList;
         List<EnemyGenerator> EnemyGenList;
+        List<Collectible> ColleList;
+        List<CollectibleGenerator> ColleGenList;
 
         int ViewportWidth, ViewportHeight;
         float PressureTime, DryTime;
@@ -52,18 +54,24 @@ namespace OobiMobile
             EnemyIndex = new List<Texture2D>();
             ColleIndex = new List<Texture2D>();
             EnemyGenList = new List<EnemyGenerator>();
+            ColleList = new List<Collectible>();
+            ColleGenList = new List<CollectibleGenerator>();
             ViewportWidth = GraphicsDevice.Viewport.Width;
             ViewportHeight = GraphicsDevice.Viewport.Height;
             PressureTime = 0.0f;
-            PressureTimeLimit = 2.0f;
+            PressureTimeLimit = 1.0f;
             DryTime = 0.0f;
             DryTimeLimit = 3.0f;
             
             
             // TODO: Add your initialization logic here
             int[] toe1 = { 0, 1, 2, 3, 4 };
-            EnemyGenerator eneGen = new EnemyGenerator(toe1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f), 4);
+            EnemyGenerator eneGen = new EnemyGenerator(toe1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f), new Vector2(ViewportWidth, ViewportHeight), 4.0f, 200.0f);
             EnemyGenList.Add(eneGen);
+
+            int[] toc1 = { 0 };
+            CollectibleGenerator colGen = new CollectibleGenerator(toc1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f), new Vector2(ViewportWidth, ViewportHeight), 3.0f, 500.0f);
+            ColleGenList.Add(colGen);
             base.Initialize();
         }
 
@@ -86,15 +94,14 @@ namespace OobiMobile
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_3_Placeholder"));
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_4_Placeholder"));
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_5_Placeholder"));
-            foreach (Enemy e in EnemyList)
-            {
-                e.ColRadius = (EnemyIndex[e.type].Width + EnemyIndex[e.type].Height) / 8.0f;
-            }
+
+            ColleIndex.Add(Content.Load<Texture2D>("Raindrop_Placeholder"));
+            
 
 
-            PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2 - pivot.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2);
+            PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2);
 
-            mc = new MainCharacter(MainCha, PivotCenter, Vector2.Zero);
+            mc = new MainCharacter(MainCha, PivotCenter, Vector2.Zero, 3);
         }
 
         /// <summary>
@@ -129,12 +136,22 @@ namespace OobiMobile
                         {
                             TouchStart = touch.Position;
                             mc.IsDragged = true;
+                            mc.Velc = Vector2.Zero;
                         }
                     }
 
                     if(touch.State == TouchLocationState.Moved && mc.IsDragged)
                     {
-                        mc.Position = Vector2.Subtract(touch.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f));
+                        if (Vector2.Distance(touch.Position, PivotCenter) < GraphicsDevice.Viewport.Width / 2.0f - mc.ColRadius)
+                            mc.Position = Vector2.Subtract(touch.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f));
+                        else
+                        {
+                            mc.IsDragged = false;
+                            TouchDirection = Vector2.Normalize(Vector2.Subtract(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), TouchStart));
+                            //speed due to distance between two points.
+                            float speed = Vector2.Distance(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), TouchStart);
+                            mc.Velc = TouchDirection * speed;
+                        }
                     }
                     if (touch.State == TouchLocationState.Released)
                     {
@@ -145,7 +162,7 @@ namespace OobiMobile
                             TouchDirection = Vector2.Normalize(Vector2.Subtract(TouchEnd, TouchStart));
                             //speed due to distance between two points.
                             float speed = Vector2.Distance(TouchEnd, TouchStart);
-                            mc.Velc = TouchDirection * speed / 10.0f;
+                            mc.Velc = TouchDirection * speed;
                         }
                     }
                 }
@@ -162,19 +179,30 @@ namespace OobiMobile
             {
                 eg.Generate(gameTime, EnemyList);
             }
+            //Enemies move
             foreach (Enemy e in EnemyList)
             {
                 e.Move(gameTime);
             }
+            //Generating Collectibles
+            foreach (CollectibleGenerator cg in ColleGenList)
+            {
+                cg.Generate(gameTime, ColleList);
+            }
+            //Collectibles move
+            foreach (Collectible c in ColleList)
+            {
+                c.Move(gameTime);
+            }
             //Time
             PressureTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
             DryTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if(PressureTime >= PressureTimeLimit)
+            if (PressureTime >= PressureTimeLimit) 
             {
                 //explode
             }
 
-            if(DryTime >= DryTimeLimit)
+            if (DryTime >= DryTimeLimit) 
             {
                 //game over
             }
@@ -187,6 +215,31 @@ namespace OobiMobile
             }
             mc.BorderCheck(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, ViewportWidth / 2.0f, PivotCenter);
 
+            //Collision detection
+            //enemy
+            foreach (Enemy e in EnemyList) 
+            {
+                if (Vector2.Distance(Vector2.Add(mc.Position , new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), e.position) < e.ColRadius + mc.ColRadius)
+                {
+                    mc.Lives--;
+                    if(mc.Lives <= 0)
+                    {
+                        //game over
+                    }
+                    EnemyList.Remove(e);
+                    break;
+                }
+            }
+            //collectible
+            foreach (Collectible c in ColleList)
+            {
+                if ( Vector2.Distance(mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f), c.Position) < mc.ColRadius + c.ColRadius)
+                {
+                    mc.Lives++;
+                    ColleList.Remove(c);
+                    break;
+                }
+            }
             base.Update(gameTime);
         }
 
@@ -207,13 +260,20 @@ namespace OobiMobile
 
             spriteBatch.End();
 
+            //Enemy & Collectible
             spriteBatch.Begin();
             spriteBatch.Draw(mc.Texture, mc.Position, Color.White);
             foreach (Enemy e in EnemyList)
             {
-                spriteBatch.Draw(EnemyIndex[e.type], e.position, Color.White);
+                e.EnemySize = new Vector2(EnemyIndex[e.type].Width, EnemyIndex[e.type].Height); //actually redundant
+                e.ColRadius = (EnemyIndex[e.type].Width + EnemyIndex[e.type].Height) / 8.0f; //give collison box size
+                spriteBatch.Draw(EnemyIndex[e.type], e.position - e.EnemySize / 2.0f, Color.White);
             }
-
+            foreach (Collectible c in ColleList)
+            {
+                c.ColRadius = (ColleIndex[c.Type].Width + ColleIndex[c.Type].Height) / 8.0f;//give collison box size
+                spriteBatch.Draw(ColleIndex[c.Type], c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
+            }
             spriteBatch.End();
             base.Draw(gameTime);
         }
