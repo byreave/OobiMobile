@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
 using OobiMobile.Classes;
 using System.Collections.Generic;
+using static System.Math;
 
 namespace OobiMobile
 {
@@ -15,7 +16,8 @@ namespace OobiMobile
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Texture2D MainCha, background, pivot, Heart;
+        Texture2D MainCha, background, pivot, Heart, Line;
+        SpriteFont GameoverFont;
         List<Texture2D> EnemyIndex;
         List<Texture2D> ColleIndex;
         List<Enemy> EnemyList;
@@ -23,7 +25,7 @@ namespace OobiMobile
         List<Collectible> ColleList;
         List<CollectibleGenerator> ColleGenList;
 
-        int ViewportWidth, ViewportHeight;
+        int ViewportWidth, ViewportHeight, Levels;
         float PressureTime, DryTime;
         float PressureTimeLimit, DryTimeLimit;
         Vector2 TouchStart, TouchEnd, TouchDirection;
@@ -62,6 +64,7 @@ namespace OobiMobile
             PressureTimeLimit = 1.0f;
             DryTime = 0.0f;
             DryTimeLimit = 3.0f;
+            Levels = 1;//0 game start, 1 gaming, 2 game over;
             
             
             // TODO: Add your initialization logic here
@@ -89,6 +92,7 @@ namespace OobiMobile
             background = Content.Load<Texture2D>("Background_Placeholder");
             pivot = Content.Load<Texture2D>("Pivot_Placeholder");
             Heart = Content.Load<Texture2D>("Heart");
+            GameoverFont = Content.Load<SpriteFont>("gameover");
             EnemyIndex.Add(Content.Load<Texture2D>("Bee_Placeholder"));
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_1_Placeholder"));
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_2_Placeholder"));
@@ -97,7 +101,11 @@ namespace OobiMobile
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_5_Placeholder"));
 
             ColleIndex.Add(Content.Load<Texture2D>("Raindrop_Placeholder"));
-            
+
+            // create 1x1 texture for line drawing
+            Line = new Texture2D(GraphicsDevice, 1, 1);
+            Line.SetData<Color>(
+                new Color[] { Color.OrangeRed });// fill the texture with white
 
 
             PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2);
@@ -133,7 +141,7 @@ namespace OobiMobile
                 {
                     if (touch.State == TouchLocationState.Pressed)
                     {
-                        if(Vector2.Distance(touch.Position, Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f))) <= mc.ColRadius)
+                        if(Vector2.Distance(touch.Position, Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f))) <= mc.ColRadius * 2.0f)
                         {
                             TouchStart = touch.Position;
                             mc.IsDragged = true;
@@ -150,7 +158,7 @@ namespace OobiMobile
                             mc.IsDragged = false;
                             TouchDirection = Vector2.Normalize(Vector2.Subtract(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), TouchStart));
                             //speed due to distance between two points.
-                            float speed = Vector2.Distance(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), TouchStart);
+                            float speed = Vector2.Distance(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), TouchStart) * 2.0f;
                             mc.Velc = TouchDirection * speed;
                         }
                     }
@@ -204,7 +212,10 @@ namespace OobiMobile
             DryTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (PressureTime >= PressureTimeLimit) 
             {
-                //explode
+                //explode, in this case life - 1
+                mc.IsDragged = false;
+                mc.Velc = Vector2.Zero;
+                mc.Lives--;
             }
 
             if (DryTime >= DryTimeLimit) 
@@ -212,6 +223,11 @@ namespace OobiMobile
                 //game over
             }
 
+            //Game over
+            if(mc.Lives <= 0)
+            {
+                Levels = 2;
+            }
             //Main character move
             if (mc.IsDragged == false)
             {
@@ -257,40 +273,80 @@ namespace OobiMobile
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
-            //Background & Pivot
+            //Background
             spriteBatch.Begin();
-
             spriteBatch.Draw(background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
-            spriteBatch.Draw(pivot, new Rectangle(GraphicsDevice.Viewport.Width / 2 - pivot.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2, pivot.Width, pivot.Height), Color.White);
-
             spriteBatch.End();
 
-            //Enemy & Collectible
-            spriteBatch.Begin();
-            spriteBatch.Draw(mc.Texture, mc.Position, Color.White);
-            foreach (Enemy e in EnemyList)
+            if (Levels == 1)
             {
-                e.EnemySize = new Vector2(EnemyIndex[e.type].Width, EnemyIndex[e.type].Height); //actually redundant
-                e.ColRadius = (EnemyIndex[e.type].Width + EnemyIndex[e.type].Height) / 8.0f; //give collison box size
-                spriteBatch.Draw(EnemyIndex[e.type], e.position - e.EnemySize / 2.0f, Color.White);
+                //Pivot & Line
+                spriteBatch.Begin();
+
+                spriteBatch.Draw(pivot, new Rectangle(GraphicsDevice.Viewport.Width / 2 - pivot.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2, pivot.Width, pivot.Height), Color.White);
+
+                //Draw Line
+                DrawLine(spriteBatch, Line, PivotCenter, mc.Position - new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f), 10);
+
+                spriteBatch.End();
+
+                //Enemy & Collectible
+                spriteBatch.Begin();
+                spriteBatch.Draw(mc.Texture, mc.Position, Color.White);
+                foreach (Enemy e in EnemyList)
+                {
+                    e.EnemySize = new Vector2(EnemyIndex[e.type].Width, EnemyIndex[e.type].Height); //actually redundant
+                    e.ColRadius = ( EnemyIndex[e.type].Width + EnemyIndex[e.type].Height ) / 8.0f; //give collison box size
+                    spriteBatch.Draw(EnemyIndex[e.type], e.position - e.EnemySize / 2.0f, Color.White);
+                }
+                foreach (Collectible c in ColleList)
+                {
+                    c.ColRadius = ( ColleIndex[c.Type].Width + ColleIndex[c.Type].Height ) / 8.0f;//give collison box size
+                    spriteBatch.Draw(ColleIndex[c.Type], c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
+                }
+
+                spriteBatch.End();
+                spriteBatch.Begin();
+                //Heart
+                if (mc.Lives < 0)
+                    mc.Lives = 0;
+                for (int i = 0 ; i < mc.Lives ; ++i)
+                {
+                    spriteBatch.Draw(Heart, new Vector2(ViewportWidth / 20.0f + i * 1.2f * Heart.Width, ViewportHeight / 40.0f), Color.White);
+                }
+                spriteBatch.End();
             }
-            foreach (Collectible c in ColleList)
+
+            if (Levels == 2)//Game over
             {
-                c.ColRadius = (ColleIndex[c.Type].Width + ColleIndex[c.Type].Height) / 8.0f;//give collison box size
-                spriteBatch.Draw(ColleIndex[c.Type], c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
+                spriteBatch.Begin();
+                spriteBatch.End();
             }
             
-            spriteBatch.End();
-            spriteBatch.Begin();
-            //Heart
-            if (mc.Lives < 0)
-                mc.Lives = 0;
-            for (int i = 0; i < mc.Lives; ++i)
-            {
-                spriteBatch.Draw(Heart, new Vector2(ViewportWidth / 20.0f + i * 1.2f * Heart.Width, ViewportHeight / 40.0f), Color.White);
-            }
-            spriteBatch.End();
             base.Draw(gameTime);
+        }
+        //https://gamedev.stackexchange.com/questions/44015/how-can-i-draw-a-simple-2d-line-in-xna-without-using-3d-primitives-and-shders
+        void DrawLine(SpriteBatch sb, Texture2D t, Vector2 start, Vector2 end, int width)
+        {
+            Vector2 edge = end - start;
+            // calculate angle to rotate line
+            float angle =
+                (float)Atan2(edge.Y, edge.X);
+
+
+            sb.Draw(t,
+                new Rectangle(// rectangle defines shape of line and position of start of line
+                    (int)start.X - width / 2,
+                    (int)start.Y,
+                    (int)edge.Length(), //sb will strech the texture to fill this rectangle
+                    width), //width of line, change this to make thicker line
+                null,
+                Color.Red, //colour of line
+                angle,     //angle of line (calulated above)
+                new Vector2(0, 0), // point in line about which to rotate
+                SpriteEffects.None,
+                0);
+
         }
     }
 }
