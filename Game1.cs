@@ -40,7 +40,7 @@ namespace OobiMobile
             graphics.IsFullScreen = true;
             //graphics.PreferredBackBufferWidth = 800;
             //graphics.PreferredBackBufferHeight = 480;
-            graphics.SupportedOrientations = DisplayOrientation.LandscapeLeft | DisplayOrientation.LandscapeRight;
+            graphics.SupportedOrientations = DisplayOrientation.Portrait;
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace OobiMobile
                 new Color[] { Color.OrangeRed });// fill the texture with white
 
 
-            PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2);
+            PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2);
 
             mc = new MainCharacter(MainCha, PivotCenter, Vector2.Zero, 3);
         }
@@ -208,7 +208,8 @@ namespace OobiMobile
                 c.Move(gameTime);
             }
             //Time
-            PressureTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if(mc.IsDragged)
+                PressureTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
             DryTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (PressureTime >= PressureTimeLimit) 
             {
@@ -216,6 +217,7 @@ namespace OobiMobile
                 mc.IsDragged = false;
                 mc.Velc = Vector2.Zero;
                 mc.Lives--;
+                PressureTime = 0;
             }
 
             if (DryTime >= DryTimeLimit) 
@@ -246,6 +248,7 @@ namespace OobiMobile
                     if(mc.Lives <= 0)
                     {
                         //game over
+                        Levels = 2;
                     }
                     EnemyList.Remove(e);
                     break;
@@ -282,12 +285,13 @@ namespace OobiMobile
             {
                 //Pivot & Line
                 spriteBatch.Begin();
+                //spriteBatch.Draw(background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
 
                 spriteBatch.Draw(pivot, new Rectangle(GraphicsDevice.Viewport.Width / 2 - pivot.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2, pivot.Width, pivot.Height), Color.White);
 
                 //Draw Line
-                DrawLine(spriteBatch, Line, PivotCenter, mc.Position - new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f), 10);
-
+                DrawLine(spriteBatch, Line, PivotCenter, mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f), 10);
+                
                 spriteBatch.End();
 
                 //Enemy & Collectible
@@ -296,12 +300,12 @@ namespace OobiMobile
                 foreach (Enemy e in EnemyList)
                 {
                     e.EnemySize = new Vector2(EnemyIndex[e.type].Width, EnemyIndex[e.type].Height); //actually redundant
-                    e.ColRadius = ( EnemyIndex[e.type].Width + EnemyIndex[e.type].Height ) / 8.0f; //give collison box size
+                    e.ColRadius = (EnemyIndex[e.type].Width + EnemyIndex[e.type].Height) / 8.0f; //give collison box size
                     spriteBatch.Draw(EnemyIndex[e.type], e.position - e.EnemySize / 2.0f, Color.White);
                 }
                 foreach (Collectible c in ColleList)
                 {
-                    c.ColRadius = ( ColleIndex[c.Type].Width + ColleIndex[c.Type].Height ) / 8.0f;//give collison box size
+                    c.ColRadius = (ColleIndex[c.Type].Width + ColleIndex[c.Type].Height) / 8.0f;//give collison box size
                     spriteBatch.Draw(ColleIndex[c.Type], c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
                 }
 
@@ -310,20 +314,23 @@ namespace OobiMobile
                 //Heart
                 if (mc.Lives < 0)
                     mc.Lives = 0;
-                for (int i = 0 ; i < mc.Lives ; ++i)
+                for (int i = 0; i < mc.Lives; ++i)
                 {
                     spriteBatch.Draw(Heart, new Vector2(ViewportWidth / 20.0f + i * 1.2f * Heart.Width, ViewportHeight / 40.0f), Color.White);
                 }
                 spriteBatch.End();
             }
 
-            if (Levels == 2)//Game over
+            else if (Levels == 2)//Game over
             {
                 spriteBatch.Begin();
-                spriteBatch.DrawString(GameoverFont, "YOU DIED", Vector2.Zero, Color.Black, 0, new Vector2(ViewportWidth / 2.0f, ViewportHeight / 2.0f), 1, SpriteEffects.None, 0);
+                spriteBatch.DrawString(GameoverFont, "YOU DIED", new Vector2(ViewportWidth / 2.0f - GameoverFont.Texture.Width * 1.5f, ViewportHeight / 2.0f), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 0.1f);
                 spriteBatch.End();
             }
-            
+            //else
+            //{
+
+            //}
             base.Draw(gameTime);
         }
         //https://gamedev.stackexchange.com/questions/44015/how-can-i-draw-a-simple-2d-line-in-xna-without-using-3d-primitives-and-shders
