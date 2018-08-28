@@ -320,6 +320,7 @@ namespace OobiMobile
             if (Levels == 2)//Game over
             {
                 spriteBatch.Begin();
+                spriteBatch.DrawString(GameoverFont, "YOU DIED", Vector2.Zero, Color.Black, 0, new Vector2(ViewportWidth / 2.0f, ViewportHeight / 2.0f), 1, SpriteEffects.None, 0);
                 spriteBatch.End();
             }
             
