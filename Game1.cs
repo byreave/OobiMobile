@@ -24,13 +24,15 @@ namespace OobiMobile
         List<EnemyGenerator> EnemyGenList;
         List<Collectible> ColleList;
         List<CollectibleGenerator> ColleGenList;
+        List<int> EnemyDamage;
 
         int ViewportWidth, ViewportHeight, Levels;
-        float PressureTime, DryTime;
-        float PressureTimeLimit, DryTimeLimit;
+        float PressureTime, DryoutSpeed;
+        float PressureTimeLimit;
         Vector2 TouchStart, TouchEnd, TouchDirection;
         Vector2 PivotCenter;
         MainCharacter mc;
+        const float MaxLives = 100.0f;
 
         public Game1()
         {
@@ -58,12 +60,13 @@ namespace OobiMobile
             EnemyGenList = new List<EnemyGenerator>();
             ColleList = new List<Collectible>();
             ColleGenList = new List<CollectibleGenerator>();
+            EnemyDamage = new List<int>();
             ViewportWidth = GraphicsDevice.Viewport.Width;
             ViewportHeight = GraphicsDevice.Viewport.Height;
             PressureTime = 0.0f;
             PressureTimeLimit = 1.0f;
-            DryTime = 0.0f;
-            DryTimeLimit = 3.0f;
+            DryoutSpeed = 5.0f; //how much lives lose per sec
+           
             Levels = 1;//0 game start, 1 gaming, 2 game over;
             
             
@@ -94,12 +97,18 @@ namespace OobiMobile
             Heart = Content.Load<Texture2D>("Heart");
             GameoverFont = Content.Load<SpriteFont>("gameover");
             EnemyIndex.Add(Content.Load<Texture2D>("Bee_Placeholder"));
+            EnemyDamage.Add(20);
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_1_Placeholder"));
+            EnemyDamage.Add(10);
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_2_Placeholder"));
+            EnemyDamage.Add(10);
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_3_Placeholder"));
+            EnemyDamage.Add(10);
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_4_Placeholder"));
+            EnemyDamage.Add(10);
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_5_Placeholder"));
-
+            EnemyDamage.Add(10);
+    
             ColleIndex.Add(Content.Load<Texture2D>("Raindrop_Placeholder"));
 
             // create 1x1 texture for line drawing
@@ -110,7 +119,7 @@ namespace OobiMobile
 
             PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2);
 
-            mc = new MainCharacter(MainCha, PivotCenter, Vector2.Zero, 3);
+            mc = new MainCharacter(MainCha, PivotCenter, Vector2.Zero, MaxLives);
         }
 
         /// <summary>
@@ -141,11 +150,14 @@ namespace OobiMobile
                 {
                     if (touch.State == TouchLocationState.Pressed)
                     {
+                        if (Vector2.Distance(touch.Position, PivotCenter) > GraphicsDevice.Viewport.Width / 2.0f - mc.ColRadius)
+                            continue;
                         if(Vector2.Distance(touch.Position, Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f))) <= mc.ColRadius * 2.0f)
                         {
                             TouchStart = touch.Position;
                             mc.IsDragged = true;
                             mc.Velc = Vector2.Zero;
+                            PressureTime = 0.0f;
                         }
                     }
 
@@ -157,6 +169,10 @@ namespace OobiMobile
                         {
                             mc.IsDragged = false;
                             TouchDirection = Vector2.Normalize(Vector2.Subtract(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), TouchStart));
+                            if (Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)) == TouchStart)
+                            {
+                                TouchDirection = Vector2.Zero;
+                            }
                             //speed due to distance between two points.
                             float speed = Vector2.Distance(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), TouchStart) * 2.0f;
                             mc.Velc = TouchDirection * speed;
@@ -177,6 +193,9 @@ namespace OobiMobile
                             float speed = Vector2.Distance(TouchEnd, TouchStart);
                             mc.Velc = TouchDirection * speed;
                         }
+                        //restart game
+                        if (Levels == 2)
+                            RestartGame();
                     }
                 }
             }
@@ -197,6 +216,15 @@ namespace OobiMobile
             {
                 e.Move(gameTime);
             }
+            //Enemies out of screen
+            foreach (Enemy e in EnemyList)
+            {
+                if(e.position.X > ViewportWidth || e.position.Y > ViewportHeight)
+                {
+                    EnemyList.Remove(e);
+                    break;
+                }
+            }
             //Generating Collectibles
             foreach (CollectibleGenerator cg in ColleGenList)
             {
@@ -207,23 +235,31 @@ namespace OobiMobile
             {
                 c.Move(gameTime);
             }
+            //Collectibles out of screen
+            foreach (Collectible c in ColleList)
+            {
+                if(c.Position.Y > ViewportHeight || c.Position.X > ViewportWidth)
+                {
+                    ColleList.Remove(c);
+                    break;
+                }
+            }
             //Time
             if(mc.IsDragged)
                 PressureTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            DryTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            //DryTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (PressureTime >= PressureTimeLimit) 
             {
-                //explode, in this case life - 1
+                //explode, in this case hp - 10
                 mc.IsDragged = false;
                 mc.Velc = Vector2.Zero;
-                mc.Lives--;
-                PressureTime = 0;
+                mc.Lives -= 10;
+                PressureTime = 0.0f;
             }
 
-            if (DryTime >= DryTimeLimit) 
-            {
-                //game over
-            }
+
+            //hp drops over time
+            mc.Lives -= (float)gameTime.ElapsedGameTime.TotalSeconds * DryoutSpeed;
 
             //Game over
             if(mc.Lives <= 0)
@@ -244,7 +280,7 @@ namespace OobiMobile
             {
                 if (Vector2.Distance(Vector2.Add(mc.Position , new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), e.position) < e.ColRadius + mc.ColRadius)
                 {
-                    mc.Lives--;
+                    mc.Lives -= EnemyDamage[e.type];
                     if(mc.Lives <= 0)
                     {
                         //game over
@@ -259,7 +295,8 @@ namespace OobiMobile
             {
                 if ( Vector2.Distance(mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f), c.Position) < mc.ColRadius + c.ColRadius)
                 {
-                    mc.Lives++;
+                    if(mc.Lives < MaxLives)
+                        mc.Lives += 10;
                     ColleList.Remove(c);
                     break;
                 }
@@ -312,9 +349,7 @@ namespace OobiMobile
                 spriteBatch.End();
                 spriteBatch.Begin();
                 //Heart
-                if (mc.Lives < 0)
-                    mc.Lives = 0;
-                for (int i = 0; i < mc.Lives; ++i)
+                for (int i = 0; i < mc.Lives / 10; ++i)
                 {
                     spriteBatch.Draw(Heart, new Vector2(ViewportWidth / 20.0f + i * 1.2f * Heart.Width, ViewportHeight / 40.0f), Color.White);
                 }
@@ -325,6 +360,8 @@ namespace OobiMobile
             {
                 spriteBatch.Begin();
                 spriteBatch.DrawString(GameoverFont, "YOU DIED", new Vector2(ViewportWidth / 2.0f - GameoverFont.Texture.Width * 1.5f, ViewportHeight / 2.0f), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 0.1f);
+                spriteBatch.DrawString(GameoverFont, "Tap to restart", new Vector2(ViewportWidth / 2.0f - GameoverFont.Texture.Width * 1.5f, 3.0f * ViewportHeight / 4.0f), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 0.1f);
+
                 spriteBatch.End();
             }
             //else
@@ -355,6 +392,16 @@ namespace OobiMobile
                 SpriteEffects.None,
                 0);
 
+        }
+
+        void RestartGame()
+        {
+            //reset oobi position and lives
+            mc.Position = PivotCenter;
+            mc.Lives = MaxLives;
+            EnemyList.Clear();
+            ColleList.Clear();
+            Levels = 1;
         }
     }
 }

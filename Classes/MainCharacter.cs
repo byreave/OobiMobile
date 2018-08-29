@@ -11,14 +11,14 @@ namespace OobiMobile.Classes
 {
     class MainCharacter
     {
-        public int Lives { set; get; }
+        public float Lives { set; get; }
         public Vector2 Position { set; get; }
         public Vector2 Velc { set; get; }
         public Texture2D Texture { set; get; }
         public float ColRadius { set; get; }
 
         public bool IsDragged { set; get; }
-        public MainCharacter(Texture2D t, Vector2 p, Vector2 v, int l = 0)
+        public MainCharacter(Texture2D t, Vector2 p, Vector2 v, float l = 100.0f)
         {
             Texture = t;
             Lives = l;
