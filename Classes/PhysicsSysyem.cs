@@ -17,6 +17,7 @@ namespace OobiMobile.Classes
     class PhysicsSystem
     {
         public const float GravAcc = 10.0f;
+        public const float TensionK = 10.0f;
         public float Mass { set; get; }
 
         public Vector2 Force { set; get; }

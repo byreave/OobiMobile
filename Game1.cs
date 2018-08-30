@@ -16,17 +16,18 @@ namespace OobiMobile
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Texture2D MainCha, background, pivot, Heart, Line;
+        Texture2D MainCha, background, pivot, Heart, Line, RopeTex;
         SpriteFont GameoverFont;
         List<Texture2D> EnemyIndex;
         List<Texture2D> ColleIndex;
         List<Enemy> EnemyList;
+        List<RopeUnit> Rope;
         List<EnemyGenerator> EnemyGenList;
         List<Collectible> ColleList;
         List<CollectibleGenerator> ColleGenList;
         List<int> EnemyDamage;
 
-        int ViewportWidth, ViewportHeight, Levels;
+        int ViewportWidth, ViewportHeight, Levels, RopeUnitsNumber;
         float PressureTime, DryoutSpeed;
         float PressureTimeLimit;
         Vector2 TouchStart, TouchEnd, TouchDirection;
@@ -61,13 +62,14 @@ namespace OobiMobile
             ColleList = new List<Collectible>();
             ColleGenList = new List<CollectibleGenerator>();
             EnemyDamage = new List<int>();
+            Rope = new List<RopeUnit>();
             ViewportWidth = GraphicsDevice.Viewport.Width;
             ViewportHeight = GraphicsDevice.Viewport.Height;
             PressureTime = 0.0f;
             PressureTimeLimit = 1.0f;
             DryoutSpeed = 5.0f; //how much lives lose per sec
-           
-            Levels = 1;//0 game start, 1 gaming, 2 game over;
+            RopeUnitsNumber = 10;
+            Levels = 0;//0 game start, 1 gaming, 2 game over;
             
             
             // TODO: Add your initialization logic here
@@ -96,6 +98,7 @@ namespace OobiMobile
             pivot = Content.Load<Texture2D>("Pivot_Placeholder");
             Heart = Content.Load<Texture2D>("Heart");
             GameoverFont = Content.Load<SpriteFont>("gameover");
+            RopeTex = Content.Load<Texture2D>("rope");
             EnemyIndex.Add(Content.Load<Texture2D>("Bee_Placeholder"));
             EnemyDamage.Add(20);
             EnemyIndex.Add(Content.Load<Texture2D>("Tack_1_Placeholder"));
@@ -120,6 +123,11 @@ namespace OobiMobile
             PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2);
 
             mc = new MainCharacter(MainCha, PivotCenter, Vector2.Zero, MaxLives);
+            Vector2 ropeUnitPos = new Vector2(PivotCenter.X, PivotCenter.Y + RopeTex.Height / 2.0f);
+            for(int i = 0; i < RopeUnitsNumber; ++ i)
+            {
+                Rope.Add(new RopeUnit(ropeUnitPos + new Vector2(0.0f, i * RopeTex.Height), Vector2.Zero, (RopeTex.Width + RopeTex.Height) / 4.0f));
+            }
         }
 
         /// <summary>
@@ -206,101 +214,149 @@ namespace OobiMobile
             }
 
             // TODO: Add your update logic here
-            //Generating Enemies
-            foreach (EnemyGenerator eg in EnemyGenList)
+            //test for physics system
+            if(Levels == 0)
             {
-                eg.Generate(gameTime, EnemyList);
-            }
-            //Enemies move
-            foreach (Enemy e in EnemyList)
-            {
-                e.Move(gameTime);
-            }
-            //Enemies out of screen
-            foreach (Enemy e in EnemyList)
-            {
-                if(e.position.X > ViewportWidth || e.position.Y > ViewportHeight)
+                for(int i = 0; i < RopeUnitsNumber; ++ i)
                 {
-                    EnemyList.Remove(e);
-                    break;
-                }
-            }
-            //Generating Collectibles
-            foreach (CollectibleGenerator cg in ColleGenList)
-            {
-                cg.Generate(gameTime, ColleList);
-            }
-            //Collectibles move
-            foreach (Collectible c in ColleList)
-            {
-                c.Move(gameTime);
-            }
-            //Collectibles out of screen
-            foreach (Collectible c in ColleList)
-            {
-                if(c.Position.Y > ViewportHeight || c.Position.X > ViewportWidth)
-                {
-                    ColleList.Remove(c);
-                    break;
-                }
-            }
-            //Time
-            if(mc.IsDragged)
-                PressureTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            //DryTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (PressureTime >= PressureTimeLimit) 
-            {
-                //explode, in this case hp - 10
-                mc.IsDragged = false;
-                mc.Velc = Vector2.Zero;
-                mc.Lives -= 10;
-                PressureTime = 0.0f;
-            }
+                    float tensionForcePrev = 0.0f, tensionForceXPrev = 0.0f, tensionForceYPrev = 0.0f;
+                    float tensionForceNext = 0.0f, tensionForceXNext = 0.0f, tensionForceYNext = 0.0f;
 
-
-            //hp drops over time
-            mc.Lives -= (float)gameTime.ElapsedGameTime.TotalSeconds * DryoutSpeed;
-
-            //Game over
-            if(mc.Lives <= 0)
-            {
-                Levels = 2;
-            }
-            //Main character move
-            if (mc.IsDragged == false)
-            {
-                mc.Move(gameTime);
-                mc.Gravity(500.0f, gameTime);
-            }
-            mc.BorderCheck(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, ViewportWidth / 2.0f, PivotCenter);
-
-            //Collision detection
-            //enemy
-            foreach (Enemy e in EnemyList) 
-            {
-                if (Vector2.Distance(Vector2.Add(mc.Position , new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), e.position) < e.ColRadius + mc.ColRadius)
-                {
-                    mc.Lives -= EnemyDamage[e.type];
-                    if(mc.Lives <= 0)
+                    if (i == 0)//first rope unit connects pivot
                     {
-                        //game over
-                        Levels = 2;
+                        tensionForcePrev = (Vector2.Distance(PivotCenter, Rope[i].Position) - Rope[i].Radius - (pivot.Height+pivot.Width) / 2.0f) * PhysicsSystem.TensionK;
+                        tensionForceXPrev = (Rope[i].Position.X - PivotCenter.X) / Vector2.Distance(Rope[i].Position, PivotCenter) * tensionForcePrev;
+                        tensionForceYPrev = (Rope[i].Position.Y - PivotCenter.Y) / Vector2.Distance(Rope[i].Position, PivotCenter) * tensionForcePrev;
                     }
-                    EnemyList.Remove(e);
-                    break;
+                    else
+                    {
+                        tensionForcePrev = (Vector2.Distance(Rope[i-1].Position, Rope[i].Position) - Rope[i].Radius - Rope[i-1].Radius) * PhysicsSystem.TensionK;
+                        tensionForceXPrev = (Rope[i].Position.X - Rope[i - 1].Position.X) / Vector2.Distance(Rope[i].Position, Rope[i - 1].Position) * tensionForcePrev;
+                        tensionForceYPrev = (Rope[i].Position.Y - Rope[i - 1].Position.Y) / Vector2.Distance(Rope[i].Position, Rope[i - 1].Position) * tensionForcePrev;
+                    }
+
+                    if(i == RopeUnitsNumber-1)//last rope unit connects oobi
+                    {
+                        tensionForceNext = (Vector2.Distance(Rope[i].Position, mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)) - Rope[i].Radius - mc.ColRadius) * PhysicsSystem.TensionK;
+                        tensionForceXNext = (mc.Position.X - Rope[i].Position.X - mc.Texture.Width / 2.0f) / Vector2.Distance(Rope[i].Position, mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)) * tensionForceNext;
+                        tensionForceYNext = (mc.Position.Y - Rope[i].Position.Y - mc.Texture.Height / 2.0f) / Vector2.Distance(Rope[i].Position, mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)) * tensionForceNext;
+                    }
+                    else
+                    {
+                        tensionForceNext = (Vector2.Distance(Rope[i].Position, Rope[i+1].Position) - Rope[i].Radius - Rope[i + 1].Radius) * PhysicsSystem.TensionK;
+                        tensionForceXNext = (Rope[i+1].Position.X - Rope[i].Position.X) / Vector2.Distance(Rope[i].Position, Rope[i + 1].Position) * tensionForceNext;
+                        tensionForceYNext = (Rope[i+1].Position.Y - Rope[i].Position.Y) / Vector2.Distance(Rope[i].Position, Rope[i + 1].Position) * tensionForceNext;
+                    }
+                    Rope[i].PhysicsSystem.Force = new Vector2(tensionForceXPrev + tensionForceXNext, tensionForceYPrev + tensionForceYNext + Rope[i].PhysicsSystem.Mass * PhysicsSystem.GravAcc);
+                    Rope[i].Speed += Rope[i].PhysicsSystem.Force / Rope[i].PhysicsSystem.Mass;
                 }
-            }
-            //collectible
-            foreach (Collectible c in ColleList)
-            {
-                if ( Vector2.Distance(mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f), c.Position) < mc.ColRadius + c.ColRadius)
+
+                foreach (RopeUnit r in Rope)
                 {
-                    if(mc.Lives < MaxLives)
-                        mc.Lives += 10;
-                    ColleList.Remove(c);
-                    break;
+                    r.Move(gameTime);
                 }
             }
+            else if(Levels == 1)
+            {
+                //Generating Enemies
+                foreach (EnemyGenerator eg in EnemyGenList)
+                {
+                    eg.Generate(gameTime, EnemyList);
+                }
+                //Enemies move
+                foreach (Enemy e in EnemyList)
+                {
+                    e.Move(gameTime);
+                }
+                //Enemies out of screen
+                foreach (Enemy e in EnemyList)
+                {
+                    if (e.position.X > ViewportWidth || e.position.Y > ViewportHeight)
+                    {
+                        EnemyList.Remove(e);
+                        break;
+                    }
+                }
+                //Generating Collectibles
+                foreach (CollectibleGenerator cg in ColleGenList)
+                {
+                    cg.Generate(gameTime, ColleList);
+                }
+                //Collectibles move
+                foreach (Collectible c in ColleList)
+                {
+                    c.Move(gameTime);
+                }
+                //Collectibles out of screen
+                foreach (Collectible c in ColleList)
+                {
+                    if (c.Position.Y > ViewportHeight || c.Position.X > ViewportWidth)
+                    {
+                        ColleList.Remove(c);
+                        break;
+                    }
+                }
+                //Time
+                /*if(mc.IsDragged)
+                    PressureTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                //DryTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (PressureTime >= PressureTimeLimit) 
+                {
+                    //explode, in this case hp - 10
+                    mc.IsDragged = false;
+                    mc.Velc = Vector2.Zero;
+                    mc.Lives -= 10;
+                    PressureTime = 0.0f;
+                }*/
+
+
+                //hp drops over time
+                mc.Lives -= (float)gameTime.ElapsedGameTime.TotalSeconds * DryoutSpeed;
+
+                //Game over
+                if (mc.Lives <= 0)
+                {
+                    Levels = 2;
+                }
+                //Main character move
+                if (mc.IsDragged == false)
+                {
+                    mc.Move(gameTime);
+                    mc.Gravity(500.0f, gameTime);
+                }
+                mc.BorderCheck(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, ViewportWidth / 2.0f, PivotCenter);
+
+                //Collision detection
+                //enemy
+                foreach (Enemy e in EnemyList)
+                {
+                    if (Vector2.Distance(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), e.position) < e.ColRadius + mc.ColRadius)
+                    {
+                        mc.Lives -= EnemyDamage[e.type];
+                        if (mc.Lives <= 0)
+                        {
+                            //game over
+                            Levels = 2;
+                        }
+                        EnemyList.Remove(e);
+                        break;
+                    }
+                }
+                //collectible
+                foreach (Collectible c in ColleList)
+                {
+                    if (Vector2.Distance(mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f), c.Position) < mc.ColRadius + c.ColRadius)
+                    {
+                        if (mc.Lives < MaxLives)
+                            mc.Lives += 10;
+                        ColleList.Remove(c);
+                        break;
+                    }
+                }
+            }
+
+            
+            
             base.Update(gameTime);
         }
 
@@ -317,8 +373,11 @@ namespace OobiMobile
             spriteBatch.Begin();
             spriteBatch.Draw(background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
             spriteBatch.End();
+            if (Levels == 0)
+            {
 
-            if (Levels == 1)
+            }
+            else if (Levels == 1)
             {
                 //Pivot & Line
                 spriteBatch.Begin();
