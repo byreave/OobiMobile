@@ -66,6 +66,8 @@
     <Compile Include="Classes\Enemy.cs" />
     <Compile Include="Classes\EnemyGenerator.cs" />
     <Compile Include="Classes\MainCharacter.cs" />
+    <Compile Include="Classes\PhysicsSysyem.cs" />
+    <Compile Include="Classes\RopeUnit.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
