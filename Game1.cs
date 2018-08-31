@@ -16,7 +16,9 @@ namespace OobiMobile
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Texture2D MainCha, background, pivot, Heart, Line, RopeTex;
+        Texture2D MainCha, background,  Heart, Line, RopeTex;
+        Texture2D OobiTop, OobiPupil;
+        Texture2D pivot, pivotBase;
         SpriteFont GameoverFont;
         List<Texture2D> EnemyIndex;
         List<Texture2D> ColleIndex;
@@ -30,6 +32,7 @@ namespace OobiMobile
         int ViewportWidth, ViewportHeight, Levels, RopeUnitsNumber;
         float PressureTime, DryoutSpeed;
         float PressureTimeLimit;
+        float RopeLength;
         Vector2 TouchStart, TouchEnd, TouchDirection;
         Vector2 PivotCenter;
         MainCharacter mc;
@@ -69,8 +72,8 @@ namespace OobiMobile
             PressureTimeLimit = 1.0f;
             DryoutSpeed = 5.0f; //how much lives lose per sec
             RopeUnitsNumber = 10;
-            Levels = 0;//0 game start, 1 gaming, 2 game over;
-            
+            Levels = 1;//0 game start, 1 gaming, 2 game over;
+            RopeLength = 0.0f;
             
             // TODO: Add your initialization logic here
             int[] toe1 = { 0, 1, 2, 3, 4 };
@@ -93,9 +96,12 @@ namespace OobiMobile
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            MainCha = Content.Load<Texture2D>("Eye_Placeholder");
-            background = Content.Load<Texture2D>("Background_Placeholder");
-            pivot = Content.Load<Texture2D>("Pivot_Placeholder");
+            MainCha = Content.Load<Texture2D>("Oobi_Base");
+            OobiTop = Content.Load<Texture2D>("Oobi_Glass Top");
+            OobiPupil = Content.Load<Texture2D>("Oobi_Pupil");
+            background = Content.Load<Texture2D>("Background_01");
+            pivot = Content.Load<Texture2D>("Pivot_Top");
+            pivotBase = Content.Load<Texture2D>("Pivot_Base");
             Heart = Content.Load<Texture2D>("Heart");
             GameoverFont = Content.Load<SpriteFont>("gameover");
             RopeTex = Content.Load<Texture2D>("rope");
@@ -120,14 +126,17 @@ namespace OobiMobile
                 new Color[] { Color.OrangeRed });// fill the texture with white
 
 
-            PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2);
+            PivotCenter = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
 
-            mc = new MainCharacter(MainCha, PivotCenter, Vector2.Zero, MaxLives);
-            Vector2 ropeUnitPos = new Vector2(PivotCenter.X, PivotCenter.Y + RopeTex.Height / 2.0f);
+            Vector2 ropeUnitPos = new Vector2(PivotCenter.X, PivotCenter.Y + pivot.Height / 2.0f + RopeTex.Height / 2.0f);
             for(int i = 0; i < RopeUnitsNumber; ++ i)
             {
                 Rope.Add(new RopeUnit(ropeUnitPos + new Vector2(0.0f, i * RopeTex.Height), Vector2.Zero, (RopeTex.Width + RopeTex.Height) / 4.0f));
             }
+            mc = new MainCharacter(MainCha, new Vector2(PivotCenter.X, Rope[RopeUnitsNumber - 1].Position.Y + RopeTex.Height / 2.0f + MainCha.Height / 2.0f), Vector2.Zero, MaxLives);
+            RopeLength = Rope[RopeUnitsNumber - 1].Position.Y + Rope[RopeUnitsNumber - 1].Radius + mc.ColRadius - PivotCenter.Y;
+
+
         }
 
         /// <summary>
@@ -158,9 +167,9 @@ namespace OobiMobile
                 {
                     if (touch.State == TouchLocationState.Pressed)
                     {
-                        if (Vector2.Distance(touch.Position, PivotCenter) > GraphicsDevice.Viewport.Width / 2.0f - mc.ColRadius)
-                            continue;
-                        if(Vector2.Distance(touch.Position, Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f))) <= mc.ColRadius * 2.0f)
+                        //if (Vector2.Distance(touch.Position, PivotCenter) > GraphicsDevice.Viewport.Width / 2.0f - mc.ColRadius)
+                        //    continue;
+                        if(Vector2.Distance(touch.Position, mc.Position) <= mc.ColRadius)
                         {
                             TouchStart = touch.Position;
                             mc.IsDragged = true;
@@ -171,24 +180,30 @@ namespace OobiMobile
 
                     if(touch.State == TouchLocationState.Moved && mc.IsDragged)
                     {
-                        if (Vector2.Distance(touch.Position, PivotCenter) < GraphicsDevice.Viewport.Width / 2.0f - mc.ColRadius)
-                            mc.Position = Vector2.Subtract(touch.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f));
+                        mc.Position = touch.Position;
+
+                        /*if (Vector2.Distance(touch.Position, PivotCenter) < GraphicsDevice.Viewport.Width / 2.0f - mc.ColRadius)
+                            mc.Position = touch.Position;
                         else
                         {
                             mc.IsDragged = false;
-                            TouchDirection = Vector2.Normalize(Vector2.Subtract(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), TouchStart));
-                            if (Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)) == TouchStart)
+                            TouchDirection = Vector2.Normalize(Vector2.Subtract(mc.Position, TouchStart));
+                            if (mc.Position == TouchStart)
                             {
                                 TouchDirection = Vector2.Zero;
                             }
                             //speed due to distance between two points.
-                            float speed = Vector2.Distance(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), TouchStart) * 2.0f;
+                            float speed = Vector2.Distance(mc.Position, TouchStart) * 2.0f;
                             mc.Velc = TouchDirection * speed;
-                        }
+                        }*/
                     }
                     if (touch.State == TouchLocationState.Released)
                     {
-                        if(mc.IsDragged)
+                        if (mc.IsDragged)
+                        {
+                            mc.IsDragged = false;
+                        }
+                        /*if(mc.IsDragged)
                         {
                             TouchEnd = touch.Position;
                             mc.IsDragged = false;
@@ -200,7 +215,7 @@ namespace OobiMobile
                             //speed due to distance between two points.
                             float speed = Vector2.Distance(TouchEnd, TouchStart);
                             mc.Velc = TouchDirection * speed;
-                        }
+                        }*/
                         //restart game
                         if (Levels == 2)
                             RestartGame();
@@ -224,36 +239,43 @@ namespace OobiMobile
 
                     if (i == 0)//first rope unit connects pivot
                     {
-                        tensionForcePrev = (Vector2.Distance(PivotCenter, Rope[i].Position) - Rope[i].Radius - (pivot.Height+pivot.Width) / 2.0f) * PhysicsSystem.TensionK;
-                        tensionForceXPrev = (Rope[i].Position.X - PivotCenter.X) / Vector2.Distance(Rope[i].Position, PivotCenter) * tensionForcePrev;
-                        tensionForceYPrev = (Rope[i].Position.Y - PivotCenter.Y) / Vector2.Distance(Rope[i].Position, PivotCenter) * tensionForcePrev;
+                        tensionForcePrev = (Vector2.Distance(PivotCenter, Rope[i].Position) - Rope[i].Radius - (pivot.Height+pivot.Width) / 4.0f) * PhysicsSystem.RopeTensionK;
+                        tensionForceXPrev = (PivotCenter.X - Rope[i].Position.X) / Vector2.Distance(Rope[i].Position, PivotCenter) * tensionForcePrev;
+                        tensionForceYPrev = (PivotCenter.Y - Rope[i].Position.Y) / Vector2.Distance(Rope[i].Position, PivotCenter) * tensionForcePrev;
                     }
                     else
                     {
-                        tensionForcePrev = (Vector2.Distance(Rope[i-1].Position, Rope[i].Position) - Rope[i].Radius - Rope[i-1].Radius) * PhysicsSystem.TensionK;
-                        tensionForceXPrev = (Rope[i].Position.X - Rope[i - 1].Position.X) / Vector2.Distance(Rope[i].Position, Rope[i - 1].Position) * tensionForcePrev;
-                        tensionForceYPrev = (Rope[i].Position.Y - Rope[i - 1].Position.Y) / Vector2.Distance(Rope[i].Position, Rope[i - 1].Position) * tensionForcePrev;
+                        tensionForcePrev = (Vector2.Distance(Rope[i-1].Position, Rope[i].Position) - Rope[i].Radius - Rope[i-1].Radius) * PhysicsSystem.RopeTensionK;
+                        tensionForceXPrev = (Rope[i - 1].Position.X - Rope[i].Position.X) / Vector2.Distance(Rope[i].Position, Rope[i - 1].Position) * tensionForcePrev;
+                        tensionForceYPrev = (Rope[i - 1].Position.Y - Rope[i].Position.Y) / Vector2.Distance(Rope[i].Position, Rope[i - 1].Position) * tensionForcePrev;
                     }
 
                     if(i == RopeUnitsNumber-1)//last rope unit connects oobi
                     {
-                        tensionForceNext = (Vector2.Distance(Rope[i].Position, mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)) - Rope[i].Radius - mc.ColRadius) * PhysicsSystem.TensionK;
-                        tensionForceXNext = (mc.Position.X - Rope[i].Position.X - mc.Texture.Width / 2.0f) / Vector2.Distance(Rope[i].Position, mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)) * tensionForceNext;
-                        tensionForceYNext = (mc.Position.Y - Rope[i].Position.Y - mc.Texture.Height / 2.0f) / Vector2.Distance(Rope[i].Position, mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)) * tensionForceNext;
+                        tensionForceNext = (Vector2.Distance(Rope[i].Position, mc.Position) - Rope[i].Radius - mc.ColRadius) * PhysicsSystem.RopeTensionK;
+                        tensionForceXNext = (mc.Position.X - Rope[i].Position.X) / Vector2.Distance(Rope[i].Position, mc.Position) * tensionForceNext;
+                        tensionForceYNext = (mc.Position.Y - Rope[i].Position.Y) / Vector2.Distance(Rope[i].Position, mc.Position) * tensionForceNext;
                     }
                     else
                     {
-                        tensionForceNext = (Vector2.Distance(Rope[i].Position, Rope[i+1].Position) - Rope[i].Radius - Rope[i + 1].Radius) * PhysicsSystem.TensionK;
+                        tensionForceNext = (Vector2.Distance(Rope[i].Position, Rope[i+1].Position) - Rope[i].Radius - Rope[i + 1].Radius) * PhysicsSystem.RopeTensionK;
                         tensionForceXNext = (Rope[i+1].Position.X - Rope[i].Position.X) / Vector2.Distance(Rope[i].Position, Rope[i + 1].Position) * tensionForceNext;
                         tensionForceYNext = (Rope[i+1].Position.Y - Rope[i].Position.Y) / Vector2.Distance(Rope[i].Position, Rope[i + 1].Position) * tensionForceNext;
                     }
                     Rope[i].PhysicsSystem.Force = new Vector2(tensionForceXPrev + tensionForceXNext, tensionForceYPrev + tensionForceYNext + Rope[i].PhysicsSystem.Mass * PhysicsSystem.GravAcc);
-                    Rope[i].Speed += Rope[i].PhysicsSystem.Force / Rope[i].PhysicsSystem.Mass;
+                    //Air Fiction
+                    Rope[i].PhysicsSystem.Force -= Rope[i].Speed * PhysicsSystem.RopeAirFictionK;
+                    Rope[i].Speed += Rope[i].PhysicsSystem.Force / Rope[i].PhysicsSystem.Mass * (float)gameTime.ElapsedGameTime.TotalSeconds;
                 }
 
                 foreach (RopeUnit r in Rope)
                 {
                     r.Move(gameTime);
+                }
+                if(mc.IsDragged == false)
+                {
+                    mc.PhysicsMove(PivotCenter, RopeLength, gameTime);
+                    mc.Move(gameTime);
                 }
             }
             else if(Levels == 1)
@@ -296,6 +318,48 @@ namespace OobiMobile
                         break;
                     }
                 }
+
+                //Rope Unit Move
+                for (int i = 0; i < RopeUnitsNumber; ++i)
+                {
+                    float tensionForcePrev = 0.0f, tensionForceXPrev = 0.0f, tensionForceYPrev = 0.0f;
+                    float tensionForceNext = 0.0f, tensionForceXNext = 0.0f, tensionForceYNext = 0.0f;
+
+                    if (i == 0)//first rope unit connects pivot
+                    {
+                        tensionForcePrev = (Vector2.Distance(PivotCenter, Rope[i].Position) - Rope[i].Radius - (pivot.Height + pivot.Width) / 4.0f) * PhysicsSystem.RopeTensionK;
+                        tensionForceXPrev = (PivotCenter.X - Rope[i].Position.X) / Vector2.Distance(Rope[i].Position, PivotCenter) * tensionForcePrev;
+                        tensionForceYPrev = (PivotCenter.Y - Rope[i].Position.Y) / Vector2.Distance(Rope[i].Position, PivotCenter) * tensionForcePrev;
+                    }
+                    else
+                    {
+                        tensionForcePrev = (Vector2.Distance(Rope[i - 1].Position, Rope[i].Position) - Rope[i].Radius - Rope[i - 1].Radius) * PhysicsSystem.RopeTensionK;
+                        tensionForceXPrev = (Rope[i - 1].Position.X - Rope[i].Position.X) / Vector2.Distance(Rope[i].Position, Rope[i - 1].Position) * tensionForcePrev;
+                        tensionForceYPrev = (Rope[i - 1].Position.Y - Rope[i].Position.Y) / Vector2.Distance(Rope[i].Position, Rope[i - 1].Position) * tensionForcePrev;
+                    }
+
+                    if (i == RopeUnitsNumber - 1)//last rope unit connects oobi
+                    {
+                        tensionForceNext = (Vector2.Distance(Rope[i].Position, mc.Position) - Rope[i].Radius - mc.ColRadius) * PhysicsSystem.RopeTensionK;
+                        tensionForceXNext = (mc.Position.X - Rope[i].Position.X) / Vector2.Distance(Rope[i].Position, mc.Position) * tensionForceNext;
+                        tensionForceYNext = (mc.Position.Y - Rope[i].Position.Y) / Vector2.Distance(Rope[i].Position, mc.Position) * tensionForceNext;
+                    }
+                    else
+                    {
+                        tensionForceNext = (Vector2.Distance(Rope[i].Position, Rope[i + 1].Position) - Rope[i].Radius - Rope[i + 1].Radius) * PhysicsSystem.RopeTensionK;
+                        tensionForceXNext = (Rope[i + 1].Position.X - Rope[i].Position.X) / Vector2.Distance(Rope[i].Position, Rope[i + 1].Position) * tensionForceNext;
+                        tensionForceYNext = (Rope[i + 1].Position.Y - Rope[i].Position.Y) / Vector2.Distance(Rope[i].Position, Rope[i + 1].Position) * tensionForceNext;
+                    }
+                    Rope[i].PhysicsSystem.Force = new Vector2(tensionForceXPrev + tensionForceXNext, tensionForceYPrev + tensionForceYNext + Rope[i].PhysicsSystem.Mass * PhysicsSystem.GravAcc);
+                    //Air Fiction
+                    Rope[i].PhysicsSystem.Force -= Rope[i].Speed * PhysicsSystem.RopeAirFictionK;
+                    Rope[i].Speed += Rope[i].PhysicsSystem.Force / Rope[i].PhysicsSystem.Mass * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                }
+
+                foreach (RopeUnit r in Rope)
+                {
+                    r.Move(gameTime);
+                }
                 //Time
                 /*if(mc.IsDragged)
                     PressureTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -321,16 +385,17 @@ namespace OobiMobile
                 //Main character move
                 if (mc.IsDragged == false)
                 {
+                    mc.PhysicsMove(PivotCenter, RopeLength, gameTime);
                     mc.Move(gameTime);
-                    mc.Gravity(500.0f, gameTime);
+                    
                 }
-                mc.BorderCheck(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, ViewportWidth / 2.0f, PivotCenter);
+                //mc.BorderCheck(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, ViewportWidth / 2.0f, PivotCenter);
 
                 //Collision detection
                 //enemy
                 foreach (Enemy e in EnemyList)
                 {
-                    if (Vector2.Distance(Vector2.Add(mc.Position, new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f)), e.position) < e.ColRadius + mc.ColRadius)
+                    if (Vector2.Distance(mc.Position, e.position) < e.ColRadius + mc.ColRadius)
                     {
                         mc.Lives -= EnemyDamage[e.type];
                         if (mc.Lives <= 0)
@@ -345,7 +410,7 @@ namespace OobiMobile
                 //collectible
                 foreach (Collectible c in ColleList)
                 {
-                    if (Vector2.Distance(mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f), c.Position) < mc.ColRadius + c.ColRadius)
+                    if (Vector2.Distance(mc.Position, c.Position) < mc.ColRadius + c.ColRadius)
                     {
                         if (mc.Lives < MaxLives)
                             mc.Lives += 10;
@@ -373,26 +438,48 @@ namespace OobiMobile
             spriteBatch.Begin();
             spriteBatch.Draw(background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
             spriteBatch.End();
+            //Rope
             if (Levels == 0)
             {
+                spriteBatch.Begin();
+
+                foreach (RopeUnit r in Rope)
+                {
+                    spriteBatch.Draw(RopeTex, r.Position - new Vector2(RopeTex.Width / 2.0f, RopeTex.Height / 2.0f), Color.White);
+                }
+                spriteBatch.Draw(mc.Texture, mc.Position - new Vector2(MainCha.Width / 2.0f, MainCha.Height / 2.0f), Color.White);
+                spriteBatch.Draw(OobiPupil, mc.Position - new Vector2(OobiPupil.Width / 2.0f, OobiPupil.Height / 2.0f), Color.White);
+                spriteBatch.Draw(OobiTop, mc.Position - new Vector2(OobiTop.Width / 2.0f, OobiTop.Height / 2.0f), Color.White);
+
+                spriteBatch.End();
 
             }
             else if (Levels == 1)
             {
                 //Pivot & Line
                 spriteBatch.Begin();
+                //Rope Units
+                foreach (RopeUnit r in Rope)
+                {
+                    spriteBatch.Draw(RopeTex, r.Position - new Vector2(RopeTex.Width / 2.0f, RopeTex.Height / 2.0f), Color.White);
+                }
                 //spriteBatch.Draw(background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
 
-                spriteBatch.Draw(pivot, new Rectangle(GraphicsDevice.Viewport.Width / 2 - pivot.Width / 2, GraphicsDevice.Viewport.Height - GraphicsDevice.Viewport.Width / 2 - pivot.Height / 2, pivot.Width, pivot.Height), Color.White);
+                spriteBatch.Draw(pivotBase, PivotCenter - new Vector2(pivotBase.Width / 2.0f, pivotBase.Height / 2.0f), Color.White);
+
+                spriteBatch.Draw(pivot, PivotCenter - new Vector2(pivot.Width / 2.0f, pivot.Height / 2.0f), Color.White);
 
                 //Draw Line
-                DrawLine(spriteBatch, Line, PivotCenter, mc.Position + new Vector2(mc.Texture.Width / 2.0f, mc.Texture.Height / 2.0f), 10);
+                DrawLine(spriteBatch, Line, PivotCenter, mc.Position, 10);
                 
                 spriteBatch.End();
 
                 //Enemy & Collectible
                 spriteBatch.Begin();
-                spriteBatch.Draw(mc.Texture, mc.Position, Color.White);
+                //Oobi
+                spriteBatch.Draw(mc.Texture, mc.Position - new Vector2(MainCha.Width / 2.0f, MainCha.Height / 2.0f), Color.White);
+                spriteBatch.Draw(OobiPupil, mc.Position - new Vector2(OobiPupil.Width / 2.0f, OobiPupil.Height / 2.0f), Color.White);
+                spriteBatch.Draw(OobiTop, mc.Position - new Vector2(OobiTop.Width / 2.0f, OobiTop.Height / 2.0f), Color.White);
                 foreach (Enemy e in EnemyList)
                 {
                     e.EnemySize = new Vector2(EnemyIndex[e.type].Width, EnemyIndex[e.type].Height); //actually redundant
@@ -456,7 +543,7 @@ namespace OobiMobile
         void RestartGame()
         {
             //reset oobi position and lives
-            mc.Position = PivotCenter;
+            mc.Position = new Vector2(PivotCenter.X, Rope[RopeUnitsNumber - 1].Position.Y + RopeTex.Height / 2.0f + MainCha.Height / 2.0f);
             mc.Lives = MaxLives;
             EnemyList.Clear();
             ColleList.Clear();

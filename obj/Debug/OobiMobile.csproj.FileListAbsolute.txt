@@ -56,5 +56,3 @@ C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Debug\android\assets\Sy
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Debug\android\assets\System.ServiceModel.Internals.pdb
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Debug\android\assets\System.Xml.Linq.pdb
 C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Debug\android\assets\System.Xml.pdb
-C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\bin\Android\AnyCPU\Debug\OobiMobile.dll
-C:\Users\u1211442\source\repos\OobiMobile\OobiMobile\obj\Debug\linksrc\OobiMobile.dll.mdb

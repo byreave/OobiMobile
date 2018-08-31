@@ -29,12 +29,16 @@ namespace OobiMobile.Classes
         {
             Position = pos;
             Speed = velc;
-            PhysicsSystem = new PhysicsSystem(10.0f, Vector2.Zero);
+            PhysicsSystem = new PhysicsSystem(1.0f, Vector2.Zero);
             Radius = rad;
         }
         public void Move(GameTime gTime)
         {
             Position += Speed * (float)gTime.ElapsedGameTime.TotalSeconds;
+            if (Speed.X == 0)
+                PhysicsSystem.Force = new Vector2(PhysicsSystem.Force.X / 2.0f, PhysicsSystem.Force.Y);
+            if (Speed.Y == 0)
+                PhysicsSystem.Force = new Vector2(PhysicsSystem.Force.X, PhysicsSystem.Force.Y / 2.0f);
         }
     }
 }
