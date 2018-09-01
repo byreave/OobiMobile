@@ -19,6 +19,7 @@ namespace OobiMobile.Classes
 
         public PhysicsSystem PhysicsSystem;
         public bool IsDragged { set; get; }
+        public bool IsSwipe { set; get; }
         public MainCharacter(Texture2D t, Vector2 p, Vector2 v, float l = 100.0f)
         {
             Texture = t;
@@ -27,6 +28,7 @@ namespace OobiMobile.Classes
             Velc = v;
             ColRadius = (Texture.Width + Texture.Height) / 4.0f;
             IsDragged = false;
+            IsSwipe = true;
             PhysicsSystem = new PhysicsSystem(100.0f, Vector2.Zero);
         }
 

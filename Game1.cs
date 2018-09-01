@@ -169,6 +169,8 @@ namespace OobiMobile
                     {
                         //if (Vector2.Distance(touch.Position, PivotCenter) > GraphicsDevice.Viewport.Width / 2.0f - mc.ColRadius)
                         //    continue;
+                        if (touch.Position.Y < ViewportHeight / 2.0f)
+                            continue;
                         if(Vector2.Distance(touch.Position, mc.Position) <= mc.ColRadius)
                         {
                             TouchStart = touch.Position;
@@ -182,6 +184,23 @@ namespace OobiMobile
                     {
                         mc.Position = touch.Position;
 
+                        if (mc.Position.Y < ViewportHeight / 2.0f + mc.ColRadius / 2.0f)
+                        {
+                            mc.IsDragged = false;
+                            if (mc.IsSwipe)
+                            {
+                                TouchEnd = touch.Position;
+                                //mc.IsDragged = false;
+                                TouchDirection = Vector2.Normalize(Vector2.Subtract(TouchEnd, TouchStart));
+                                if (TouchEnd == TouchStart)
+                                {
+                                    TouchDirection = Vector2.Zero;
+                                }
+                                //speed due to distance between two points.
+                                float speed = Vector2.Distance(TouchEnd, TouchStart);
+                                mc.Velc = TouchDirection * speed;
+                            }
+                        }
                         /*if (Vector2.Distance(touch.Position, PivotCenter) < GraphicsDevice.Viewport.Width / 2.0f - mc.ColRadius)
                             mc.Position = touch.Position;
                         else
@@ -202,20 +221,23 @@ namespace OobiMobile
                         if (mc.IsDragged)
                         {
                             mc.IsDragged = false;
-                        }
-                        /*if(mc.IsDragged)
-                        {
-                            TouchEnd = touch.Position;
-                            mc.IsDragged = false;
-                            TouchDirection = Vector2.Normalize(Vector2.Subtract(TouchEnd, TouchStart));
-                            if(TouchEnd == TouchStart)
+                            mc.IsSwipe = true;
+                            mc.Velc = Vector2.Zero;
+                            if(Vector2.Distance(mc.Position, PivotCenter) < RopeLength)
                             {
-                                TouchDirection = Vector2.Zero;
+                                TouchEnd = touch.Position;
+                                mc.IsDragged = false;
+                                TouchDirection = Vector2.Normalize(Vector2.Subtract(TouchEnd, TouchStart));
+                                if (TouchEnd == TouchStart)
+                                {
+                                    TouchDirection = Vector2.Zero;
+                                }
+                                //speed due to distance between two points.
+                                float speed = Vector2.Distance(TouchEnd, TouchStart);
+                                mc.Velc = TouchDirection * speed;
                             }
-                            //speed due to distance between two points.
-                            float speed = Vector2.Distance(TouchEnd, TouchStart);
-                            mc.Velc = TouchDirection * speed;
-                        }*/
+                        }
+                        
                         //restart game
                         if (Levels == 2)
                             RestartGame();
@@ -361,17 +383,17 @@ namespace OobiMobile
                     r.Move(gameTime);
                 }
                 //Time
-                /*if(mc.IsDragged)
+                if(mc.IsDragged)
                     PressureTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 //DryTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (PressureTime >= PressureTimeLimit) 
                 {
-                    //explode, in this case hp - 10
-                    mc.IsDragged = false;
-                    mc.Velc = Vector2.Zero;
-                    mc.Lives -= 10;
+                    //If holding too long, then is not swipe
+                    mc.IsSwipe = false;
+                    //mc.Velc = Vector2.Zero;
+                   // mc.Lives -= 10;
                     PressureTime = 0.0f;
-                }*/
+                }
 
 
                 //hp drops over time
