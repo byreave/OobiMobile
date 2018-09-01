@@ -17,7 +17,7 @@ namespace OobiMobile.Classes
     class PhysicsSystem
     {
         public const float GravAcc = 50.0f;
-        public const float TensionK = 200.0f;
+        public const float TensionK = 1600.0f;
         public const float RopeTensionK = 100.0f;
         public const float RopeAirFictionK = 3.0f;
         public const float AirFictionK = 10.0f;
