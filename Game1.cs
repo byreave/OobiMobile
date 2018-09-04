@@ -59,6 +59,8 @@ namespace OobiMobile
         MainCharacter mc;
         const float MaxLives = 100.0f;
 
+        //Is Dying
+        bool IsDying;
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -106,7 +108,7 @@ namespace OobiMobile
             CurrentScore = 0.0f;
             ScoreFile = "HighestScore.txt";
             GetHighestScore();
-
+            IsDying = false;
             //TouchSequence
             TouchSequence = new Queue<Vector2>();
             // TODO: Add your initialization logic here
@@ -531,6 +533,7 @@ namespace OobiMobile
                 //Game over
                 if (mc.Lives <= 0)
                 {
+                    IsDying = true;
                     GameOver();
 
                 }
@@ -552,11 +555,7 @@ namespace OobiMobile
                         //Enemy Hit Sound
                         HitByEnemy.Play();
                         mc.Lives -= EnemyDamage[e.type];
-                        if (mc.Lives <= 0)
-                        {
-                            //game over
-                            Levels = 2;
-                        }
+                        
                         OobiAnim.Play("Damage");
                         EnemyList.Remove(e);
                         break;
@@ -754,7 +753,16 @@ namespace OobiMobile
                 //Oobi
                 spriteBatch.Draw(mc.Texture, mc.Position - new Vector2(MainCha.Width / 2.0f, MainCha.Height / 2.0f), Color.White);
                 spriteBatch.Draw(OobiPupil, mc.Position - new Vector2(OobiPupil.Width / 2.0f, OobiPupil.Height / 2.0f), Color.White);
-                var tmp_sf = OobiAnim.Update(gameTime);
+                SpriteFrame tmp_sf;
+                /*if(IsDying)
+                {
+                    OobiAnim.Play("Death");
+                    tmp_sf = OobiAnim.UpdateOnce(gameTime);
+                    if (tmp_sf == null)
+                        GameOver();
+                }
+                else*/
+                tmp_sf = OobiAnim.Update(gameTime);
                 spriteBatch.Draw(tmp_sf.Texture, mc.Position - new Vector2(MainCha.Width / 2.0f, MainCha.Height / 2.0f), tmp_sf.SourceRectangle,Color.White);
 
                 spriteBatch.Draw(OobiTop, mc.Position - new Vector2(OobiTop.Width / 2.0f, OobiTop.Height / 2.0f), new Color(1.0f, mc.Lives / MaxLives, mc.Lives / MaxLives, 0.5f));
@@ -891,6 +899,7 @@ namespace OobiMobile
             EnemyList.Clear();
             ColleList.Clear();
             Levels = 1;
+            IsDying = false;
             //Rope position
             Vector2 ropeUnitPos = new Vector2(PivotCenter.X, PivotCenter.Y + pivot.Height / 2.0f + RopeTex.Height / 2.0f);
             for (int i = 0; i < RopeUnitsNumber; i++)
