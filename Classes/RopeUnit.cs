@@ -35,10 +35,10 @@ namespace OobiMobile.Classes
         public void Move(GameTime gTime)
         {
             Position += Speed * (float)gTime.ElapsedGameTime.TotalSeconds;
-            if (Speed.X == 0)
+            /*if (Speed.X == 0)
                 PhysicsSystem.Force = new Vector2(PhysicsSystem.Force.X / 2.0f, PhysicsSystem.Force.Y);
             if (Speed.Y == 0)
-                PhysicsSystem.Force = new Vector2(PhysicsSystem.Force.X, PhysicsSystem.Force.Y / 2.0f);
+                PhysicsSystem.Force = new Vector2(PhysicsSystem.Force.X, PhysicsSystem.Force.Y / 2.0f);*/
         }
     }
 }

@@ -61,6 +61,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activity1.cs" />
+    <Compile Include="Classes\Animation.cs" />
+    <Compile Include="Classes\AnimationManager.cs" />
+    <Compile Include="Classes\Button.cs" />
     <Compile Include="Classes\Collectible.cs" />
     <Compile Include="Classes\CollectibleGenerator.cs" />
     <Compile Include="Classes\Enemy.cs" />
@@ -69,6 +72,7 @@
     <Compile Include="Classes\PhysicsSysyem.cs" />
     <Compile Include="Classes\RopeUnit.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="OobiAnims.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TexturePackerLoader\SpriteFrame.cs" />
@@ -100,6 +104,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\Oobi.png" />
+    <Content Include="Content\Oobi.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
