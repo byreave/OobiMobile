@@ -326,18 +326,6 @@
 /processorParam:TextureFormat=Color
 /build:UI/Credits screen.png
 
-#begin UI/Oobi Start Menu with shadows.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:UI/Oobi Start Menu with shadows.png
-
 #begin UI/Continue Button After.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -541,4 +529,28 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Remover.png
+
+#begin Oobi.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Oobi.png
+
+#begin UI/Oobi Start Menu without shadows.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:UI/Oobi Start Menu without shadows.png
 

@@ -34,15 +34,17 @@ namespace OobiMobile
         List<RopeUnit> Rope;
         List<EnemyGenerator> EnemyGenList;
         List<Collectible> ColleList;
+        List<Collectible> ColleToDelete;
         List<CollectibleGenerator> ColleGenList;
         List<int> EnemyDamage;
         Song MainMenu;
         SoundEffect ButtonClick, HitByEnemy,  ReleaseOobi, UrgentTime, ColleHit, HitMidString1, HitMidString2;
         SoundEffectInstance UrgentTimeInstance;
+        SpriteRender spriteRender;
         Queue<Vector2> TouchSequence;
         //Spritesheet for animations
         SpriteSheet SpriteSheet;
-        AnimationManager OobiAnim, WaterAnim, PlaneAnim, RemoverAnim;
+        AnimationManager OobiAnim, WaterAnim, PlaneAnim, RemoverAnim, WaterSplashAnim;
         //score
         int HighestScore;
         float CurrentScore;
@@ -83,6 +85,7 @@ namespace OobiMobile
             ColleIndex = new List<Texture2D>();
             EnemyGenList = new List<EnemyGenerator>();
             ColleList = new List<Collectible>();
+            ColleToDelete = new List<Collectible>();
             ColleGenList = new List<CollectibleGenerator>();
             EnemyDamage = new List<int>();
             Rope = new List<RopeUnit>();
@@ -108,16 +111,16 @@ namespace OobiMobile
             TouchSequence = new Queue<Vector2>();
             // TODO: Add your initialization logic here
             int[] toe1 = { 0, 1, 2, 3, 4 };
-            EnemyGenerator eneGen = new EnemyGenerator(toe1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f), new Vector2(ViewportWidth, ViewportHeight), 4.0f, 200.0f);
+            EnemyGenerator eneGen = new EnemyGenerator(toe1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f), new Vector2(ViewportWidth, ViewportHeight), 4.0f, 300.0f);
             EnemyGenList.Add(eneGen);
             int[] toe2 = { 5 }, toe3 = { 6 };
-            EnemyGenerator PlaneGen = new EnemyGenerator(toe2, new Vector2(0.0f, ViewportHeight / 4.0f), new Vector2(200.0f, 0.0f), new Vector2(ViewportWidth, ViewportHeight), 10.0f, 200.0f);
-            EnemyGenerator RemoverGen = new EnemyGenerator(toe3, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0.0f, 200.0f), new Vector2(ViewportWidth, ViewportHeight), 10.0f, 200.0f);
+            EnemyGenerator PlaneGen = new EnemyGenerator(toe2, new Vector2(0.0f, ViewportHeight / 4.0f), new Vector2(300.0f, 0.0f), new Vector2(ViewportWidth, ViewportHeight), 10.0f, 200.0f);
+            EnemyGenerator RemoverGen = new EnemyGenerator(toe3, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0.0f, 300.0f), new Vector2(ViewportWidth, ViewportHeight), 10.0f, 200.0f);
             EnemyGenList.Add(PlaneGen);
             EnemyGenList.Add(RemoverGen);
 
             int[] toc1 = { 0 };
-            CollectibleGenerator colGen = new CollectibleGenerator(toc1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 100.0f), new Vector2(ViewportWidth, ViewportHeight), 3.0f, 500.0f);
+            CollectibleGenerator colGen = new CollectibleGenerator(toc1, new Vector2(ViewportWidth / 2.0f, 0.0f), new Vector2(0, 200.0f), new Vector2(ViewportWidth, ViewportHeight), 2.0f, 500.0f);
             ColleGenList.Add(colGen);
             base.Initialize();
         }
@@ -134,9 +137,13 @@ namespace OobiMobile
             // TODO: use this.Content to load your game content here
             //Animations
             var spriteLoader = new SpriteSheetLoader(Content, GraphicsDevice);
-            //SpriteSheet = spriteLoader.Load("Oobi.png");
+            spriteRender = new SpriteRender(spriteBatch);
+
+            SpriteSheet = spriteLoader.Load("Oobi.png", Content.Load<Texture2D>("Oobi"));
+            //intialize
+            InitializeAnimationManagers();
             //StartMenuBG
-            StartMenuBG = Content.Load<Texture2D>("UI/Oobi Start Menu with shadows");
+            StartMenuBG = Content.Load<Texture2D>("UI/Oobi Start Menu without shadows");
             //Credits Page
             CreditPage = Content.Load<Texture2D>("UI/Credits screen");
             //Game Over Page
@@ -452,6 +459,8 @@ namespace OobiMobile
                         else
                             HitMidString2.Play();
                         ColleList.Remove(c);
+                        ColleToDelete.Add(c);
+                        c.AM = GetNewSplashAM();
                         break;
                     }
                 }
@@ -548,6 +557,7 @@ namespace OobiMobile
                             //game over
                             Levels = 2;
                         }
+                        OobiAnim.Play("Damage");
                         EnemyList.Remove(e);
                         break;
                     }
@@ -560,7 +570,10 @@ namespace OobiMobile
                         if (mc.Lives < MaxLives)
                             mc.Lives += 10;
                         ColleList.Remove(c);
+                        ColleToDelete.Add(c);
+                        c.AM = GetNewSplashAM();
                         // Collect Sound
+                        OobiAnim.Play("Collect");
                         ColleHit.Play();
                         break;
                     }
@@ -684,9 +697,10 @@ namespace OobiMobile
                 spriteBatch.Begin();
 
                 spriteBatch.Draw(StartMenuBG, new Rectangle(0, 0, ViewportWidth, ViewportHeight), Color.White);
+
                 //Buttons
                 //Play button
-                if(PlayButton.IsPressed)
+                if (PlayButton.IsPressed)
                 {
                     spriteBatch.Draw(PlayButton.ButtonTextureAfterPressed, PlayButton.Position, null, Color.White, 0.0f, Vector2.Zero, RestartButton.Scale, SpriteEffects.None, 0.0f);
                 }
@@ -731,7 +745,7 @@ namespace OobiMobile
                 spriteBatch.Draw(pivot, PivotCenter - new Vector2(pivot.Width / 2.0f, pivot.Height / 2.0f), Color.White);
 
                 //Draw Line
-                DrawLine(spriteBatch, Line, PivotCenter, mc.Position, 10);
+                //DrawLine(spriteBatch, Line, PivotCenter, mc.Position, 10);
                 
                 spriteBatch.End();
 
@@ -740,22 +754,47 @@ namespace OobiMobile
                 //Oobi
                 spriteBatch.Draw(mc.Texture, mc.Position - new Vector2(MainCha.Width / 2.0f, MainCha.Height / 2.0f), Color.White);
                 spriteBatch.Draw(OobiPupil, mc.Position - new Vector2(OobiPupil.Width / 2.0f, OobiPupil.Height / 2.0f), Color.White);
+                var tmp_sf = OobiAnim.Update(gameTime);
+                spriteBatch.Draw(tmp_sf.Texture, mc.Position - new Vector2(MainCha.Width / 2.0f, MainCha.Height / 2.0f), tmp_sf.SourceRectangle,Color.White);
+
                 spriteBatch.Draw(OobiTop, mc.Position - new Vector2(OobiTop.Width / 2.0f, OobiTop.Height / 2.0f), new Color(1.0f, mc.Lives / MaxLives, mc.Lives / MaxLives, 0.5f));
                 foreach (Enemy e in EnemyList)
                 {
                     e.EnemySize = new Vector2(EnemyIndex[e.type].Width, EnemyIndex[e.type].Height); //actually redundant
                     e.ColRadius = (EnemyIndex[e.type].Width + EnemyIndex[e.type].Height) / 8.0f; //give collison box size
-                    if (e.type == 5 || e.type == 6)
-                        spriteBatch.Draw(EnemyIndex[e.type], new Rectangle((e.position - e.EnemySize / 4.0f).ToPoint(), (e.EnemySize / 4.0f).ToPoint()), null, Color.White, 0.0f, Vector2.Zero, SpriteEffects.FlipHorizontally, 0.0f);
+                    if (e.type == 5)
+                    {
+                        var sf_tmp = PlaneAnim.Update(gameTime);
+                        //spriteBatch.Draw(EnemyIndex[e.type], new Rectangle((e.position - e.EnemySize / 4.0f).ToPoint(), (e.EnemySize / 4.0f).ToPoint()), null, Color.White, 0.0f, Vector2.Zero, SpriteEffects.FlipHorizontally, 0.0f);
+                        spriteRender.Draw(sf_tmp, e.position, Color.White, 0, 0.25f, SpriteEffects.FlipHorizontally);
+                    }
+                    else if (e.type == 6)
+                    {
+                        var sf_tmp = RemoverAnim.Update(gameTime);
+                        spriteRender.Draw(sf_tmp, e.position, Color.White, 0, 0.25f, SpriteEffects.FlipHorizontally);
+                    }
                     else
                         spriteBatch.Draw(EnemyIndex[e.type], e.position - e.EnemySize / 2.0f, Color.White);
                 }
                 foreach (Collectible c in ColleList)
                 {
                     c.ColRadius = (ColleIndex[c.Type].Width + ColleIndex[c.Type].Height) / 8.0f;//give collison box size
-                    spriteBatch.Draw(ColleIndex[c.Type], c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
+                    //spriteBatch.Draw(ColleIndex[c.Type], c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
+                    var sf_tmp = WaterAnim.Update(gameTime);
+                    spriteRender.Draw(sf_tmp, c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
                 }
-
+                //splash
+                foreach (Collectible c in ColleToDelete)
+                {
+                    //spriteBatch.Draw(ColleIndex[c.Type], c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
+                    var sf_tmp = c.AM.UpdateOnce(gameTime);
+                    if(sf_tmp == null)
+                    {
+                        ColleToDelete.Remove(c);
+                        break;
+                    }
+                    spriteRender.Draw(sf_tmp, c.Position - new Vector2(ColleIndex[c.Type].Width, ColleIndex[c.Type].Height) / 2.0f, Color.White);
+                }
                 spriteBatch.End();
                 spriteBatch.Begin();
                 //Heart
@@ -1042,14 +1081,36 @@ namespace OobiMobile
             Animation Plane = new Animation("Plane", 5.0f, PlaneSprites);
             Animation RemoverAni = new Animation("Remover", 5.0f, RemoverSprites);
             Animation[] OobiAnis = { OobiIdle, OobiDeath, OobiBlink, OobiDamage, OobiCollect };
-            Animation[] WaterAnis = { WaterIdle, WaterSplash };
+            Animation[] WaterAnis = { WaterIdle};
+            Animation[] WaterSplashAnis = { WaterSplash };
             Animation[] PlaneAnis = { Plane };
             Animation[] RemoverAnis = { RemoverAni };
 
-            OobiAnim = new AnimationManager("Idle", OobiAnis);
-            WaterAnim = new AnimationManager("WaterIdle", WaterAnis);
-            PlaneAnim = new AnimationManager("Plane", PlaneAnis);
-            RemoverAnim = new AnimationManager("Remover", RemoverAnis);
+            OobiAnim = new AnimationManager("Idle", OobiAnis, SpriteSheet);
+            WaterAnim = new AnimationManager("WaterIdle", WaterAnis, SpriteSheet);
+            PlaneAnim = new AnimationManager("Plane", PlaneAnis, SpriteSheet);
+            RemoverAnim = new AnimationManager("Remover", RemoverAnis, SpriteSheet);
+            WaterSplashAnim = new AnimationManager("WaterSplash", WaterSplashAnis, SpriteSheet);
+        }
+
+        AnimationManager GetNewSplashAM()
+        {
+            string[] WaterSplashSprites =
+            {
+                OobiAnimation.WaterDrop_Splash_Animations_Drop_Splash_01,
+                OobiAnimation.WaterDrop_Splash_Animations_Drop_Splash_02,
+                OobiAnimation.WaterDrop_Splash_Animations_Drop_Splash_03,
+                OobiAnimation.WaterDrop_Splash_Animations_Drop_Splash_04,
+                OobiAnimation.WaterDrop_Splash_Animations_Drop_Splash_05,
+                OobiAnimation.WaterDrop_Splash_Animations_Drop_Splash_06,
+                OobiAnimation.WaterDrop_Splash_Animations_Drop_Splash_07,
+                OobiAnimation.WaterDrop_Splash_Animations_Drop_Splash_08
+            };
+            Animation WaterSplash = new Animation("WaterSplash", 0.5f, WaterSplashSprites);
+            Animation[] WaterSplashAnis = { WaterSplash };
+
+            AnimationManager am = new AnimationManager("WaterSplash", WaterSplashAnis, SpriteSheet);
+            return am;
         }
     }
 }

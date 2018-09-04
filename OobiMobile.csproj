@@ -106,8 +106,8 @@
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\Oobi.png" />
-    <Content Include="Content\Oobi.txt" />
+    <AndroidAsset Include="Assets\Oobi.png" />
+    <AndroidAsset Include="Assets\Oobi.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />

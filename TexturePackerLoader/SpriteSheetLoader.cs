@@ -23,28 +23,18 @@
             this.graphicsDevice = graphicsDevice;
         }
 
-        public SpriteSheet MultiLoad(string imageResourceFormat, int numSheets)
-        {
-            SpriteSheet result = new SpriteSheet();
-            for (int i = 0; i < numSheets; i++)
-            {
-                string imageResource = string.Format(imageResourceFormat, i);
 
-                SpriteSheet tmp = Load(imageResource);
-                result.Add(tmp);
-            }
-            return result;
-        }
-
-
-        public SpriteSheet Load(string imageResource)
+        public SpriteSheet Load(string imageResource, Texture2D test)
         {
             var imageFile = Path.Combine(contentManager.RootDirectory, imageResource);
-            var dataFile = Path.ChangeExtension(imageFile, "txt");
 
-            FileStream fileStream = new FileStream(imageFile, FileMode.Open);
-            var texture = Texture2D.FromStream(graphicsDevice, fileStream);
-            fileStream.Dispose();
+            //var dataFile = Path.ChangeExtension(imageFile, "txt");
+            var dataFile = Path.ChangeExtension(imageResource, "txt");
+
+            //FileStream fileStream = new FileStream(imageResource, FileMode.Open);
+            //var texture = Texture2D.FromStream(graphicsDevice, fileStream);
+            var texture = test;
+            //fileStream.Dispose();
 
 
             var dataFileLines = ReadDataFile(dataFile);

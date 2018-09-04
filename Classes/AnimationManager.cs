@@ -22,11 +22,12 @@ namespace OobiMobile.Classes
         public string CurrentAnimName{ set; get; }
 
         private int AnimIndex;
-        public AnimationManager(string caName, Animation[] anims)
+        public AnimationManager(string caName, Animation[] anims, SpriteSheet sp)
         {
             CurrentAnimName = caName;
             Anims = anims;
             AnimIndex = 0;
+            SpriteSheet = sp;
         }
 
         public void Play(string name)
@@ -43,14 +44,24 @@ namespace OobiMobile.Classes
             }
         }
 
-        public Texture2D Update(GameTime gameTime)
+        public SpriteFrame Update(GameTime gameTime)
         {
             string sprite = Anims[AnimIndex].GetCurrentSprite(gameTime);
             if(Anims[AnimIndex].IsEnding())//Back to idle
             {
                 AnimIndex = 0;
             }
-            return SpriteSheet.Sprite(sprite).Texture;
+            return SpriteSheet.Sprite(sprite);
+        }
+        public SpriteFrame UpdateOnce(GameTime gameTime)
+        {
+            string sprite = Anims[AnimIndex].GetCurrentSprite(gameTime);
+            if (Anims[AnimIndex].IsEnding())//Back to idle
+            {
+                AnimIndex = 0;
+                return null;
+            }
+            return SpriteSheet.Sprite(sprite);
         }
     }
 }
