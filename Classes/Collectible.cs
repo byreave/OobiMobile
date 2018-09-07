@@ -24,6 +24,8 @@ namespace OobiMobile.Classes
         public int Type { set; get; }
         public float ColRadius { set; get; }
 
+        public AnimationManager AM { set; get; }
+
         public Collectible(int t, Vector2 v, Vector2 p)
         {
             Position = p;
